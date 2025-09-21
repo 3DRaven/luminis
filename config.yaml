@@ -1,0 +1,172 @@
+llm:
+  # Идентификатор модели. Если не указан, будет использована модель по умолчанию провайдера
+  # (см. Provider::default_chat_model()).
+  model: gemini-2.0-flash
+  # Параметры удалённого провайдера (ai-lib)
+  # Провайдер (одно из): Groq, XaiGrok, Ollama, DeepSeek, Anthropic, AzureOpenAI, HuggingFace,
+  # TogetherAI, OpenRouter, Replicate, BaiduWenxin, TencentHunyuan, IflytekSpark, Moonshot,
+  # ZhipuAI, MiniMax, OpenAI, Qwen, Gemini, Mistral, Cohere, Perplexity, AI21
+  provider: Gemini
+  base_url: # http://127.0.0.1:8080/v1beta кастомный URL, если нужен, может быть использова с wiremock для записи всего общения с AI API провайдером
+  proxy: null # http://proxy:8080 при необходимости
+  # api_key: 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
+  api_key:  # можно оставить пустым и задать через env
+  request_timeout_secs: 60
+  # Сколько символов промпта и ответа показывать в логах
+  log_prompt_preview_chars: 200
+
+crawler:
+  # Общие параметры
+  interval_seconds: 10 # Интервал между циклами, сек
+  request_timeout_secs: 30 # Таймаут HTTP-запросов, сек
+  poll_delay_secs: 5 # Задержка между вызовами API LLM суммаризатора
+  # Источники NPA list (API). Поддерживает плейсхолдеры {limit} и {offset}
+  npalist:
+    enabled: true
+    url: https://regulation.gov.ru/api/npalist/?limit={limit}&offset={offset}&sort=desc
+    limit: 50
+    # Необязательный regex для проверки/извлечения project_id из URL проекта
+    regex: "https://regulation\\.gov\\.ru/projects/(\\d{5,})"
+  # Источники RSS (XML)
+  rss:
+    enabled: true
+    url: https://regulation.gov.ru/api/public/Rss
+    # Извлечение из <guid> или <link> (первая группа должна быть числовым id)
+    regex: "(\\d{5,})"
+  # Параметры поиска fileId (опционально). Если не задано — используется стандартный endpoint
+  file_id:
+    url: https://regulation.gov.ru/api/public/PublicProjects/GetProjectStages/{project_id}
+    regex: "\\\"fileId\\\"\\s*:\\s*\\\"([^\\\"]+)\\\""
+
+telegram:
+  # Базовый URL API Telegram
+  api_base_url: https://api.telegram.org
+  # Токен бота
+  bot_token: ""
+  # Целевой чат для публикации
+  target_chat_id: 0
+  # Включить публикацию в Telegram
+  enabled: false
+  # Максимум символов в сообщении Telegram
+  max_chars: 4096
+
+mastodon:
+  # Инстанс Mastodon
+  base_url: https://mastodon.social
+  # Токен доступа
+  access_token: ""
+  # Включить публикацию в Mastodon
+  enabled: true
+  # При пустом токене запросить логин в CLI и сохранить в secrets
+  login_cli: true
+  # Видимость поста: public | unlisted | private | direct
+  visibility: unlisted
+  # Язык поста (двухбуквенный код): ru, en, ...
+  language: ru
+  # Текст CW/спойлера
+  spoiler_text: "Новости законодательства"
+  # Отмечать контент как чувствительный
+  sensitive: false
+  # Максимум символов поста в Mastodon
+  max_chars: 495
+
+output:
+  # Печать результата в консоль
+  console_enabled: true
+  # Сохранение результата в файл
+  file_enabled: true
+  # Путь к файлу для сохранения
+  file_path: ./post.txt
+  # Максимум символов при выводе в консоль
+  console_max_chars: 10000
+  # Максимум символов при сохранении в файл
+  file_max_chars: 20000
+  # Режим сохранения в файл: true = добавлять (append), false = перезаписывать
+  file_append: false
+
+run:
+  # Максимум постов за один запуск (0 или null = без лимита)
+  # max_posts_per_run: 2
+  # Таймаут суммаризации в секундах
+  summarization_timeout_secs: 120
+  # Доля исходного текста для промпта (0.05 = 5%)
+  input_sample_percent: 1.0
+  # Предпочтительный мягкий лимит для модели суммаризатора
+  model_max_chars: 300
+  # Куда сохранять кэш (docx, markdown, summary, metadata.json)
+  cache_dir: ./cache
+  # Tera-шаблон промпта для Summarizer
+  # Доступные метаданные (все поля могут быть пустыми):
+  # {{ project_id }}, {{ date }}, {{ publish_date }}, {{ status }}, {{ status_id }},
+  # {{ stage }}, {{ stage_id }}, {{ regulatory_impact }}, {{ regulatory_impact_id }},
+  # {{ kind }}, {{ kind_id }}, {{ department }}, {{ department_id }}, {{ responsible }},
+  # {{ procedure }}, {{ procedure_id }}, {{ procedure_result }}, {{ procedure_result_id }},
+  # {{ next_stage_duration }}, {{ start_discussion }}, {{ end_discussion }},
+  # {{ parallel_stage_start_discussion }}, {{ parallel_stage_end_discussion }},
+  # {{ problem }}, {{ objectives }}, {{ circle_persons }}, {{ social_relations }},
+  # {{ rationale }}, {{ transition_period }}, {{ plan_date }}, {{ complite_date_act }},
+  # {{ complite_number_dep_act }}, {{ complite_number_reg_act }}, {{ parallel_stage_files }}
+  prompt_template: |
+    Создай краткий пост суммаризации для Telegram/Mastodon на русском.
+    Требования:
+    - Уложить в {{ limit }} символов ответа, это очень важно.
+    - Без воды, факты и суть.
+    - Оцени полезность проекта от 1 до 10
+    - Оцени репрессивность от 1 до 10
+    - Оцени коррупционную емкость проекта от 1 до 10
+    - Все оценки должны быть кратко пояснены в нескольких словах и представлены в виде оценка/максимум оценка
+    - Оценки должны быть написаны под общим заголовком "Рейтинг"
+    Данные с сайта:
+    Заголовок: {{ title }}
+    Текст: {{ body }}
+    Ссылка: {{ url }}
+  # Tera-шаблон итогового поста (в который подставляется сгенерированная summary)
+  # Доступные переменные шаблона (все, что может понадобиться в посте):
+  # Базовые:
+  #   {{ title }} — заголовок проекта
+  #   {{ url }} — ссылка на проект regulation.gov.ru
+  #   {{ summary }} — итоговая суммаризация
+  # Метаданные (могут быть пустыми):
+  #   {{ project_id }}
+  #   {{ date }}
+  #   {{ publish_date }}
+  #   {{ status }}
+  #   {{ status_id }}
+  #   {{ stage }}
+  #   {{ stage_id }}
+  #   {{ regulatory_impact }}
+  #   {{ regulatory_impact_id }}
+  #   {{ kind }}
+  #   {{ kind_id }}
+  #   {{ department }}
+  #   {{ department_id }}
+  #   {{ responsible }}
+  #   {{ procedure }}
+  #   {{ procedure_id }}
+  #   {{ procedure_result }}
+  #   {{ procedure_result_id }}
+  #   {{ next_stage_duration }}
+  #   {{ parallel_stage_start_discussion }}
+  #   {{ parallel_stage_end_discussion }}
+  #   {{ start_discussion }}
+  #   {{ end_discussion }}
+  #   {{ problem }}
+  #   {{ objectives }}
+  #   {{ circle_persons }}
+  #   {{ social_relations }}
+  #   {{ rationale }}
+  #   {{ transition_period }}
+  #   {{ plan_date }}
+  #   {{ complite_date_act }}
+  #   {{ complite_number_dep_act }}
+  #   {{ complite_number_reg_act }}
+  #   {{ parallel_stage_files }} — массив строк
+  post_template: |
+    {{ url }}
+    {{ summary }}
+
+    {%- set meta_str = "" -%}
+    {%- set sep = "" -%}
+    {%- if department -%}{% set meta_str = meta_str ~ sep ~ "Деп:" ~ department %}{% set sep = "; " %}{% endif %}
+    {%- if responsible -%}{% set meta_str = meta_str ~ sep ~ "Отв:" ~ responsible %}{% set sep = "; " %}{% endif %}
+    Метаданные: [{{ meta_str }}]

@@ -1,0 +1,1030 @@
+GET https://regulation.gov.ru/api/npalist/?limit=50&offset=0&sort=desc
+
+
+```xml
+<projects offset="0" limit="50" sort="desc" total="119927">
+  <project id="160532">
+    <title>О внесении изменений в Федеральный закон «Об обязательном медицинском страховании в Российской Федерации»</title>
+    <projectId>01/05/09-25/00160532</projectId>
+    <date>2025-09-20T17:03:36.824Z</date>
+    <stage id="20">Текст</stage>
+    <status id="20">Идет обсуждение</status>
+    <regulatoryImpact id="0">Не определена</regulatoryImpact>
+    <procedureResult id="0">Не определено</procedureResult>
+    <publishDate>2025-09-20T17:07:27.95Z</publishDate>
+    <kind id="6">Проект федерального закона</kind>
+    <department id="11">Минздрав России</department>
+    <procedure id="1">Раскрытие информации о подготовке проектов нормативных правовых актов</procedure>
+    <responsible>Филиппов Олег Анатольевич</responsible>
+    <nextStageDuration>15</nextStageDuration>
+    <discussionDays>15</discussionDays>
+    <parallelStageStartDiscussion>2025-09-20T17:08:48.571Z</parallelStageStartDiscussion>
+    <parallelStageEndDiscussion>2025-10-03T17:08:48.571Z</parallelStageEndDiscussion>
+    <startDiscussion>2025-09-20T17:07:27.968Z</startDiscussion>
+    <endDiscussion>2025-10-05T17:07:27.968Z</endDiscussion>
+  </project>
+  <project id="160531">
+    <title>Об утверждении предельных максимальных аэропортовых сборов и тарифа за обслуживание воздушных судов юридических лиц, индивидуальных предпринимателей и физических лиц, осуществляющих коммерческие воздушные перевозки, авиационные работы, полеты авиации общего назначения, организаций экспериментальной и государственной авиации,
+осуществляющих деятельность в соответствии со статьей 63 Воздушного кодекса Российской Федерации организаций иностранных государств,
+с которыми Российской Федерацией заключены (отсутствуют) международные договоры, предусматривающие положения о взимании тех же сборов и тарифов, которые установлены для российских лиц,  на услуги в аэропорту Минеральные Воды, оказываемые ОАО «Международный Аэропорт Минеральные Воды»
+</title>
+    <projectId>04/15/09-25/00160531</projectId>
+    <date>2025-09-19T19:20:52.333Z</date>
+    <stage id="20">Текст</stage>
+    <status id="20">Идет обсуждение</status>
+    <regulatoryImpact id="0">Не определена</regulatoryImpact>
+    <procedureResult id="0">Не определено</procedureResult>
+    <publishDate>2025-09-19T20:00:13.929Z</publishDate>
+    <kind id="16">Проект ведомственного акта</kind>
+    <department id="41">ФАС России</department>
+    <procedure id="5">Независимая антикоррупционная экспертиза</procedure>
+    <responsible>Сомова Екатерина Сергеевна</responsible>
+    <parallelStageStartDiscussion>2025-09-19T20:00:13.939Z</parallelStageStartDiscussion>
+    <parallelStageEndDiscussion>2025-09-26T20:00:13.939Z</parallelStageEndDiscussion>
+  </project>
+  <project id="160530">
+    <title>Об утверждении предельных максимальных аэропортовых сборов и тарифов за обслуживание воздушных судов юридических лиц, индивидуальных предпринимателей и физических лиц, осуществляющих коммерческие воздушные перевозки, авиационные работы, полеты авиации общего назначения, организаций экспериментальной и государственной авиации, осуществляющих деятельность в соответствии со статьей 63 Воздушного кодекса Российской Федерации организаций иностранных государств,
+с которыми Российской Федерацией заключены (отсутствуют) международные договоры, предусматривающие положения о взимании тех же сборов и тарифов, которые установлены для российских лиц, на услуги в аэропорту Улан-Удэ (Мухино), оказываемые ООО «Аэропорт Байкал», на долгосрочный период
+
+</title>
+    <projectId>04/15/09-25/00160530</projectId>
+    <date>2025-09-19T19:18:29.012Z</date>
+    <stage id="20">Текст</stage>
+    <status id="20">Идет обсуждение</status>
+    <regulatoryImpact id="0">Не определена</regulatoryImpact>
+    <procedureResult id="0">Не определено</procedureResult>
+    <publishDate>2025-09-19T20:00:53.339Z</publishDate>
+    <kind id="16">Проект ведомственного акта</kind>
+    <department id="41">ФАС России</department>
+    <procedure id="5">Независимая антикоррупционная экспертиза</procedure>
+    <responsible>Сомова Екатерина Сергеевна</responsible>
+    <parallelStageStartDiscussion>2025-09-19T20:00:53.348Z</parallelStageStartDiscussion>
+    <parallelStageEndDiscussion>2025-09-26T20:00:53.348Z</parallelStageEndDiscussion>
+  </project>
+  <project id="160529">
+    <title>Об утверждении предельных максимальных аэропортовых сборов и тарифов за обслуживание воздушных судов юридических лиц, индивидуальных предпринимателей и физических лиц, осуществляющих коммерческие воздушные перевозки, авиационные работы, полеты авиации общего назначения, организаций экспериментальной и государственной авиации, осуществляющих деятельность в соответствии со статьей 63 Воздушного кодекса Российской Федерации организаций иностранных государств, с которыми Российской Федерацией заключены (отсутствуют) международные договоры, предусматривающие положения о взимании тех же сборов и тарифов, которые установлены для российских лиц, на услуги в аэропорту Магадан (Сокол), оказываемые АО «Аэропорт Магадан», на долгосрочный период</title>
+    <projectId>04/15/09-25/00160529</projectId>
+    <date>2025-09-19T19:16:03.803Z</date>
+    <stage id="20">Текст</stage>
+    <status id="20">Идет обсуждение</status>
+    <regulatoryImpact id="0">Не определена</regulatoryImpact>
+    <procedureResult id="0">Не определено</procedureResult>
+    <publishDate>2025-09-19T20:01:23.351Z</publishDate>
+    <kind id="16">Проект ведомственного акта</kind>
+    <department id="41">ФАС России</department>
+    <procedure id="5">Независимая антикоррупционная экспертиза</procedure>
+    <responsible>Сомова Екатерина Сергеевна</responsible>
+    <parallelStageStartDiscussion>2025-09-19T20:01:23.359Z</parallelStageStartDiscussion>
+    <parallelStageEndDiscussion>2025-09-26T20:01:23.359Z</parallelStageEndDiscussion>
+  </project>
+  <project id="160528">
+    <title>Об утверждении предельных максимальных аэропортовых сборов и тарифов за обслуживание воздушных судов юридических лиц, индивидуальных предпринимателей и физических лиц, осуществляющих коммерческие воздушные перевозки, авиационные работы, полеты авиации общего назначения, организаций экспериментальной и государственной авиации,
+осуществляющих деятельность в соответствии со статьей 63 Воздушного кодекса Российской Федерации организаций иностранных государств,
+с которыми Российской Федерацией заключены (не заключены) международные договоры, предусматривающие положения о взимании тех же сборов и тарифов, которые установлены для российских лиц, на услуги в аэропорту Минеральные Воды, оказываемые ООО «Кредитинвест», на долгосрочный период
+</title>
+    <projectId>04/15/09-25/00160528</projectId>
+    <date>2025-09-19T19:13:15.589Z</date>
+    <stage id="20">Текст</stage>
+    <status id="20">Идет обсуждение</status>
+    <regulatoryImpact id="0">Не определена</regulatoryImpact>
+    <procedureResult id="0">Не определено</procedureResult>
+    <publishDate>2025-09-19T20:01:50.487Z</publishDate>
+    <kind id="16">Проект ведомственного акта</kind>
+    <department id="41">ФАС России</department>
+    <procedure id="5">Независимая антикоррупционная экспертиза</procedure>
+    <responsible>Сомова Екатерина Сергеевна</responsible>
+    <parallelStageStartDiscussion>2025-09-19T20:01:50.496Z</parallelStageStartDiscussion>
+    <parallelStageEndDiscussion>2025-09-26T20:01:50.496Z</parallelStageEndDiscussion>
+  </project>
+  <project id="160527">
+    <title>Об утверждении предельных максимальных аэропортовых сборов и тарифов за обслуживание воздушных судов юридических лиц, индивидуальных предпринимателей и физических лиц, осуществляющих коммерческие воздушные перевозки, авиационные работы, полеты авиации общего назначения, организаций экспериментальной и государственной авиации,
+осуществляющих деятельность в соответствии со статьей 63 Воздушного кодекса Российской Федерации организаций иностранных государств, с которыми Российской Федерацией заключены международные договоры, предусматривающие положения о взимании тех же сборов и тарифов, которые установлены для российских лиц, на услуги в аэропорту Кемерово, оказываемые ООО «МАК им. А.А. Леонова»</title>
+    <projectId>04/15/09-25/00160527</projectId>
+    <date>2025-09-19T19:09:07.634Z</date>
+    <stage id="20">Текст</stage>
+    <status id="20">Идет обсуждение</status>
+    <regulatoryImpact id="0">Не определена</regulatoryImpact>
+    <procedureResult id="0">Не определено</procedureResult>
+    <publishDate>2025-09-19T20:02:32.527Z</publishDate>
+    <kind id="16">Проект ведомственного акта</kind>
+    <department id="41">ФАС России</department>
+    <procedure id="5">Независимая антикоррупционная экспертиза</procedure>
+    <responsible>Сомова Екатерина Сергеевна</responsible>
+    <parallelStageStartDiscussion>2025-09-19T20:02:32.535Z</parallelStageStartDiscussion>
+    <parallelStageEndDiscussion>2025-09-26T20:02:32.535Z</parallelStageEndDiscussion>
+  </project>
+  <project id="160526">
+    <title>О внесении изменений в постановление 
+Правительства Российской Федерации от 30 июня 2021 г. № 1066
+</title>
+    <projectId>02/07/09-25/00160526</projectId>
+    <date>2025-09-19T19:00:23.198Z</date>
+    <stage id="20">Текст</stage>
+    <status id="20">Идет обсуждение</status>
+    <regulatoryImpact id="2">Средняя</regulatoryImpact>
+    <procedureResult id="0">Не определено</procedureResult>
+    <publishDate>2025-09-19T19:18:55.68Z</publishDate>
+    <kind id="7">Проект постановления Правительства Российской Федерации</kind>
+    <department id="11">Минздрав России</department>
+    <procedure id="2">Оценка регулирующего воздействия</procedure>
+    <responsible>Филиппов Олег Анатольевич</responsible>
+    <nextStageDuration>15</nextStageDuration>
+    <discussionDays>21</discussionDays>
+    <parallelStageStartDiscussion>2025-09-19T19:18:55.699Z</parallelStageStartDiscussion>
+    <parallelStageEndDiscussion>2025-10-04T19:18:55.699Z</parallelStageEndDiscussion>
+    <startDiscussion>2025-09-19T19:18:55.693Z</startDiscussion>
+    <endDiscussion>2025-10-10T19:18:55.693Z</endDiscussion>
+  </project>
+  <project id="160525">
+    <title>О внесении изменения в постановление Правительства Российской Федерации от 19 января 2008 г. № 18</title>
+    <projectId>01/01/09-25/00160525</projectId>
+    <date>2025-09-19T17:32:39.054Z</date>
+    <stage id="20">Текст</stage>
+    <status id="20">Идет обсуждение</status>
+    <regulatoryImpact id="0">Не определена</regulatoryImpact>
+    <procedureResult id="0">Не определено</procedureResult>
+    <publishDate>2025-09-19T17:34:04.821Z</publishDate>
+    <kind id="1">Проект постановления Правительства Российской Федерации</kind>
+    <department id="3">Минфин России</department>
+    <procedure id="1">Раскрытие информации о подготовке проектов нормативных правовых актов</procedure>
+    <responsible>Парамонов Алексей Игоревич</responsible>
+    <nextStageDuration>15</nextStageDuration>
+    <discussionDays>15</discussionDays>
+    <parallelStageStartDiscussion>2025-09-19T17:34:49.843Z</parallelStageStartDiscussion>
+    <parallelStageEndDiscussion>2025-09-26T17:34:49.843Z</parallelStageEndDiscussion>
+    <startDiscussion>2025-09-19T17:34:04.834Z</startDiscussion>
+    <endDiscussion>2025-10-04T17:34:04.834Z</endDiscussion>
+  </project>
+  <project id="160524">
+    <title>О внесении изменений в постановление Правительства Российской Федерации от 30 сентября 2015 г. № 1041</title>
+    <projectId>01/01/09-25/00160524</projectId>
+    <date>2025-09-19T17:23:00.161Z</date>
+    <stage id="20">Текст</stage>
+    <status id="20">Идет обсуждение</status>
+    <regulatoryImpact id="0">Не определена</regulatoryImpact>
+    <procedureResult id="0">Не определено</procedureResult>
+    <publishDate>2025-09-19T17:24:18.68Z</publishDate>
+    <kind id="1">Проект постановления Правительства Российской Федерации</kind>
+    <department id="3">Минфин России</department>
+    <procedure id="1">Раскрытие информации о подготовке проектов нормативных правовых актов</procedure>
+    <responsible>Парамонов Алексей Игоревич</responsible>
+    <nextStageDuration>15</nextStageDuration>
+    <discussionDays>15</discussionDays>
+    <parallelStageStartDiscussion>2025-09-19T17:24:56.506Z</parallelStageStartDiscussion>
+    <parallelStageEndDiscussion>2025-09-26T17:24:56.506Z</parallelStageEndDiscussion>
+    <startDiscussion>2025-09-19T17:24:18.691Z</startDiscussion>
+    <endDiscussion>2025-10-04T17:24:18.691Z</endDiscussion>
+  </project>
+  <project id="160523">
+    <title>О внесении изменений в некоторые акты Правительства Российской Федерации по вопросам мониторинга производителей товаров, подлежащих обязательной маркировке средствами идентификации
+</title>
+    <projectId>01/01/09-25/00160523</projectId>
+    <date>2025-09-19T15:32:30.763Z</date>
+    <stage id="20">Текст</stage>
+    <status id="20">Идет обсуждение</status>
+    <regulatoryImpact id="0">Не определена</regulatoryImpact>
+    <procedureResult id="0">Не определено</procedureResult>
+    <publishDate>2025-09-19T15:34:26.086Z</publishDate>
+    <kind id="1">Проект постановления Правительства Российской Федерации</kind>
+    <department id="9">Минпромторг России</department>
+    <procedure id="1">Раскрытие информации о подготовке проектов нормативных правовых актов</procedure>
+    <responsible>Хадонов Давид Таймуразович</responsible>
+    <nextStageDuration>15</nextStageDuration>
+    <discussionDays>15</discussionDays>
+    <parallelStageStartDiscussion>2025-09-19T15:35:09.614Z</parallelStageStartDiscussion>
+    <parallelStageEndDiscussion>2025-09-26T15:35:09.614Z</parallelStageEndDiscussion>
+    <startDiscussion>2025-09-19T15:34:26.107Z</startDiscussion>
+    <endDiscussion>2025-10-04T15:34:26.107Z</endDiscussion>
+  </project>
+  <project id="160521">
+    <title>О внесении изменений в постановление Правительства Российской Федерации от 10 марта 2022 г. № 336</title>
+    <projectId>01/01/09-25/00160521</projectId>
+    <date>2025-09-19T14:31:20.219Z</date>
+    <stage id="20">Текст</stage>
+    <status id="20">Идет обсуждение</status>
+    <regulatoryImpact id="0">Не определена</regulatoryImpact>
+    <procedureResult id="0">Не определено</procedureResult>
+    <publishDate>2025-09-19T15:18:37.094Z</publishDate>
+    <kind id="1">Проект постановления Правительства Российской Федерации</kind>
+    <department id="9">Минпромторг России</department>
+    <procedure id="1">Раскрытие информации о подготовке проектов нормативных правовых актов</procedure>
+    <responsible>Атаев Закир Халит оглы</responsible>
+    <nextStageDuration>15</nextStageDuration>
+    <discussionDays>15</discussionDays>
+    <parallelStageStartDiscussion>2025-09-19T15:22:15.334Z</parallelStageStartDiscussion>
+    <parallelStageEndDiscussion>2025-09-26T15:22:15.334Z</parallelStageEndDiscussion>
+    <startDiscussion>2025-09-19T15:18:37.109Z</startDiscussion>
+    <endDiscussion>2025-10-04T15:18:37.109Z</endDiscussion>
+  </project>
+  <project id="160520">
+    <title>О ратификации Протокола о внесении изменений в Договор о Евразийском экономическом союзе от 29 мая 2014 года</title>
+    <projectId>04/13/09-25/00160520</projectId>
+    <date>2025-09-19T14:00:44.366Z</date>
+    <stage id="20">Текст</stage>
+    <status id="20">Идет обсуждение</status>
+    <regulatoryImpact id="0">Не определена</regulatoryImpact>
+    <procedureResult id="0">Не определено</procedureResult>
+    <publishDate>2025-09-19T14:02:37.995Z</publishDate>
+    <kind id="14">Проект федерального закона</kind>
+    <department id="6">Минэкономразвития России</department>
+    <procedure id="5">Независимая антикоррупционная экспертиза</procedure>
+    <responsible>Локтионова Елена</responsible>
+    <parallelStageStartDiscussion>2025-09-19T14:02:38.004Z</parallelStageStartDiscussion>
+    <parallelStageEndDiscussion>2025-09-26T14:02:38.004Z</parallelStageEndDiscussion>
+  </project>
+  <project id="160519">
+    <title>проект постановления Правительства Российской Федерации «О внесении изменений в постановление Правительства Российской Федерации от 15 апреля 2014 г. № 328»</title>
+    <projectId>01/01/09-25/00160519</projectId>
+    <date>2025-09-19T13:57:15.533Z</date>
+    <stage id="20">Текст</stage>
+    <status id="20">Идет обсуждение</status>
+    <regulatoryImpact id="0">Не определена</regulatoryImpact>
+    <procedureResult id="0">Не определено</procedureResult>
+    <publishDate>2025-09-19T14:06:36.006Z</publishDate>
+    <kind id="1">Проект постановления Правительства Российской Федерации</kind>
+    <department id="9">Минпромторг России</department>
+    <procedure id="1">Раскрытие информации о подготовке проектов нормативных правовых актов</procedure>
+    <responsible>Петросян Ариан Араикович</responsible>
+    <nextStageDuration>15</nextStageDuration>
+    <discussionDays>15</discussionDays>
+    <startDiscussion>2025-09-19T14:06:36.021Z</startDiscussion>
+    <endDiscussion>2025-10-04T14:06:36.021Z</endDiscussion>
+  </project>
+  <project id="160518">
+    <title>О внесении изменений в постановление Правительства Российской Федерации от 15 апреля 2014 г. № 326
+</title>
+    <projectId>04/12/09-25/00160518</projectId>
+    <date>2025-09-19T13:48:58.772Z</date>
+    <stage id="20">Текст</stage>
+    <status id="20">Идет обсуждение</status>
+    <regulatoryImpact id="0">Не определена</regulatoryImpact>
+    <procedureResult id="0">Не определено</procedureResult>
+    <publishDate>2025-09-19T13:51:13.353Z</publishDate>
+    <kind id="13">Проект постановления Правительства Российской Федерации</kind>
+    <department id="14">Минприроды России</department>
+    <procedure id="5">Независимая антикоррупционная экспертиза</procedure>
+    <responsible>Шипицина Анастасия Алексеевна</responsible>
+    <parallelStageStartDiscussion>2025-09-19T13:51:13.362Z</parallelStageStartDiscussion>
+    <parallelStageEndDiscussion>2025-09-26T13:51:13.362Z</parallelStageEndDiscussion>
+  </project>
+  <project id="160517">
+    <title>Об упорядочении обращения со служебной информацией ограниченного распространения в ФСИН России, территориальных органах 
+ФСИН России, учреждениях, исполняющих наказания, следственных изоляторах, а также предприятиях, учреждениях и организациях, специально созданных для обеспечения деятельности уголовно-исполнительной системы Российской Федерации
+</title>
+    <projectId>01/02/09-25/00160517</projectId>
+    <date>2025-09-19T13:29:04.25Z</date>
+    <stage id="10">Уведомление</stage>
+    <status id="20">Идет обсуждение</status>
+    <regulatoryImpact id="0">Не определена</regulatoryImpact>
+    <procedureResult id="0">Не определено</procedureResult>
+    <publishDate>2025-09-19T13:39:57.287Z</publishDate>
+    <kind id="2">Проект ведомственного акта</kind>
+    <department id="57">ФСИН России</department>
+    <procedure id="1">Раскрытие информации о подготовке проектов нормативных правовых актов</procedure>
+    <problem>определение категорий должностных лиц, уполномоченных относить служебную информацию к разряду ограниченного распространения, порядка передачи служебной информации ограниченного распространения другим органам и организациям, порядка снятия пометки «Для служебного пользования» с носителей информации ограниченного распространения и порядка организации защиты служебной информации ограниченного распространения в учреждениях и органах уголовно-исполнительной системы Российской Федерации</problem>
+    <responsible>Миликмирзоева Александра Самалдиновна</responsible>
+    <circlePersons>работники учреждений и органов уголовно-исполнительной системы Российской Федерации</circlePersons>
+    <socialRelations>общественные отношения, направленные на обеспечение 
+в пределах компетенции федеральных государственных органов функций 
+по организации защиты служебной информации ограниченного распространения</socialRelations>
+    <rationale>подпункт 1.5 Положения о порядке обращения со служебной информацией ограниченного распространения в федеральных органах исполнительной власти, уполномоченном органе управления использованием атомной энергии и уполномоченном органе по космической деятельности, утвержденного постановлением Правительства Российской Федерации 
+от 3 ноября 1994 г. № 1233</rationale>
+    <nextStageDuration>15</nextStageDuration>
+    <discussionDays>15</discussionDays>
+    <planDate>2026-03-31T12:00:00Z</planDate>
+    <startDiscussion>2025-09-19T13:39:57.425Z</startDiscussion>
+    <endDiscussion>2025-10-04T13:39:57.425Z</endDiscussion>
+  </project>
+  <project id="160516">
+    <title>О представлении Президенту Российской Федерации для внесения на ратификацию Протокола о внесении изменений в Договор о Евразийском экономическом союзе от 29 мая 2014 года</title>
+    <projectId>04/12/09-25/00160516</projectId>
+    <date>2025-09-19T13:21:43.919Z</date>
+    <stage id="20">Текст</stage>
+    <status id="20">Идет обсуждение</status>
+    <regulatoryImpact id="0">Не определена</regulatoryImpact>
+    <procedureResult id="0">Не определено</procedureResult>
+    <publishDate>2025-09-19T13:56:24.483Z</publishDate>
+    <kind id="13">Проект постановления Правительства Российской Федерации</kind>
+    <department id="6">Минэкономразвития России</department>
+    <procedure id="5">Независимая антикоррупционная экспертиза</procedure>
+    <responsible>Локтионова Елена</responsible>
+    <parallelStageStartDiscussion>2025-09-19T13:56:24.495Z</parallelStageStartDiscussion>
+    <parallelStageEndDiscussion>2025-09-26T13:56:24.495Z</parallelStageEndDiscussion>
+  </project>
+  <project id="160515">
+    <title>О внесении изменений в постановление Правительства Российской Федерации от 10 марта 2009 г. № 219</title>
+    <projectId>01/01/09-25/00160515</projectId>
+    <date>2025-09-19T12:14:16.207Z</date>
+    <stage id="20">Текст</stage>
+    <status id="20">Идет обсуждение</status>
+    <regulatoryImpact id="0">Не определена</regulatoryImpact>
+    <procedureResult id="0">Не определено</procedureResult>
+    <publishDate>2025-09-19T12:20:47.795Z</publishDate>
+    <kind id="1">Проект постановления Правительства Российской Федерации</kind>
+    <department id="9">Минпромторг России</department>
+    <procedure id="1">Раскрытие информации о подготовке проектов нормативных правовых актов</procedure>
+    <responsible>Попова Виктория</responsible>
+    <nextStageDuration>15</nextStageDuration>
+    <discussionDays>15</discussionDays>
+    <startDiscussion>2025-09-19T12:20:47.809Z</startDiscussion>
+    <endDiscussion>2025-10-04T12:20:47.809Z</endDiscussion>
+  </project>
+  <project id="160514">
+    <title>Об утверждении Методики производства экспертиз 
+(исследований) биологической безопасности генно-инженерно-модифицированных организмов, используемых для производства кормов и кормовых добавок
+</title>
+    <projectId>02/08/09-25/00160514</projectId>
+    <date>2025-09-19T11:53:51.755Z</date>
+    <stage id="20">Текст</stage>
+    <status id="20">Идет обсуждение</status>
+    <regulatoryImpact id="1">Высокая</regulatoryImpact>
+    <procedureResult id="0">Не определено</procedureResult>
+    <publishDate>2025-09-19T12:12:58.674Z</publishDate>
+    <kind id="9">Проект ведомственного акта</kind>
+    <department id="2">Минсельхоз России</department>
+    <procedure id="2">Оценка регулирующего воздействия</procedure>
+    <responsible>Несмеянов Владислав Александрович</responsible>
+    <nextStageDuration>20</nextStageDuration>
+    <discussionDays>28</discussionDays>
+    <parallelStageStartDiscussion>2025-09-19T12:12:58.692Z</parallelStageStartDiscussion>
+    <parallelStageEndDiscussion>2025-09-26T12:12:58.692Z</parallelStageEndDiscussion>
+    <startDiscussion>2025-09-19T12:12:58.687Z</startDiscussion>
+    <endDiscussion>2025-10-17T12:12:58.687Z</endDiscussion>
+  </project>
+  <project id="160513">
+    <title>О внесении изменения в Перечень видов спорта, в связи со сложностью и с иными особенностями которых возможны получение общественной организацией, осуществляющей их развитие, государственной аккредитации и приобретение ею статуса общероссийской спортивной федерации, если ее членами и (или) структурными подразделениями являются региональные спортивные федерации, осуществляющие свою деятельность на территориях менее чем половины субъектов Российской Федерации, утвержденный приказом Министерства спорта Российской Федерации от 13.08.2019 № 646</title>
+    <projectId>01/02/09-25/00160513</projectId>
+    <date>2025-09-19T11:42:32.019Z</date>
+    <stage id="10">Уведомление</stage>
+    <status id="20">Идет обсуждение</status>
+    <regulatoryImpact id="0">Не определена</regulatoryImpact>
+    <procedureResult id="0">Не определено</procedureResult>
+    <publishDate>2025-09-19T11:47:00.538Z</publishDate>
+    <kind id="2">Проект ведомственного акта</kind>
+    <department id="22">Минспорт России</department>
+    <procedure id="1">Раскрытие информации о подготовке проектов нормативных правовых актов</procedure>
+    <problem>Перечень видов спорта, в связи со сложностью и с иными особенностями которых возможны получение общественной организацией, осуществляющей их развитие, государственной аккредитации и приобретение ею статуса общероссийской спортивной федерации, если ее членами и (или) структурными подразделениями являются региональные спортивные федерации, осуществляющие свою деятельность на территориях менее чем половины субъектов Российской Федерации утверждаются уполномоченным Правительством Российской Федерации федеральным органом исполнительной власти согласно части 4 статьи 14 Федерального закона от 04.12.2007 № 329-ФЗ «О физической культуре и спорте в Российской Федерации», а также выполнение норм части 2 статьи 14 Федерального закона от 04.12.2007 № 329-ФЗ «О физической культуре и спорте в Российской Федерации»</problem>
+    <responsible>Адамантова Анна</responsible>
+    <circlePersons>общественные организации и объединения</circlePersons>
+    <socialRelations>Правовые отношения между общественными организациями и органами исполнительной власти</socialRelations>
+    <rationale>Включение и исключение видов спорта из Перечня </rationale>
+    <nextStageDuration>15</nextStageDuration>
+    <discussionDays>15</discussionDays>
+    <planDate>2025-12-31T12:00:00Z</planDate>
+    <startDiscussion>2025-09-19T11:47:00.551Z</startDiscussion>
+    <endDiscussion>2025-10-04T11:47:00.551Z</endDiscussion>
+  </project>
+  <project id="160512">
+    <title>Об утверждении Порядка государственной или муниципальной экспертизы проекта освоения лесов</title>
+    <projectId>02/08/09-25/00160512</projectId>
+    <date>2025-09-19T11:34:47.067Z</date>
+    <stage id="20">Текст</stage>
+    <status id="20">Идет обсуждение</status>
+    <regulatoryImpact id="1">Высокая</regulatoryImpact>
+    <procedureResult id="0">Не определено</procedureResult>
+    <publishDate>2025-09-19T12:12:22.292Z</publishDate>
+    <kind id="9">Проект ведомственного акта</kind>
+    <department id="14">Минприроды России</department>
+    <procedure id="2">Оценка регулирующего воздействия</procedure>
+    <responsible>Сысоева Валентина Дмитриевна</responsible>
+    <nextStageDuration>20</nextStageDuration>
+    <discussionDays>28</discussionDays>
+    <parallelStageStartDiscussion>2025-09-19T12:12:22.356Z</parallelStageStartDiscussion>
+    <parallelStageEndDiscussion>2025-10-09T12:12:22.356Z</parallelStageEndDiscussion>
+    <startDiscussion>2025-09-19T12:12:22.331Z</startDiscussion>
+    <endDiscussion>2025-10-17T12:12:22.331Z</endDiscussion>
+  </project>
+  <project id="160511">
+    <title>О внесении изменений в Порядок и условия командирования сотрудников органов внутренних дел Российской Федерации 
+на территории Российской Федерации, утвержденные приказом МВД России 
+от 27 мая 2021 г. № 300</title>
+    <projectId>01/02/09-25/00160511</projectId>
+    <date>2025-09-19T11:25:10.316Z</date>
+    <stage id="20">Текст</stage>
+    <status id="20">Идет обсуждение</status>
+    <regulatoryImpact id="0">Не определена</regulatoryImpact>
+    <procedureResult id="0">Не определено</procedureResult>
+    <publishDate>2025-09-19T11:28:41.913Z</publishDate>
+    <kind id="2">Проект ведомственного акта</kind>
+    <department id="7">МВД России</department>
+    <procedure id="1">Раскрытие информации о подготовке проектов нормативных правовых актов</procedure>
+    <responsible>Рыжкова Наталья Николаевна</responsible>
+    <nextStageDuration>15</nextStageDuration>
+    <discussionDays>15</discussionDays>
+    <parallelStageStartDiscussion>2025-09-19T11:30:40.298Z</parallelStageStartDiscussion>
+    <parallelStageEndDiscussion>2025-09-26T11:30:40.298Z</parallelStageEndDiscussion>
+    <startDiscussion>2025-09-19T11:28:41.93Z</startDiscussion>
+    <endDiscussion>2025-10-04T11:28:41.93Z</endDiscussion>
+  </project>
+  <project id="160510">
+    <title>О внесении изменений в Порядок представления гражданами, претендующими на замещение должностей федеральной государственной гражданской службы, и федеральными государственными гражданскими служащими Роспотребнадзора и его территориальных органов сведений о доходах, расходах, об имуществе 
+и обязательствах имущественного характера, утвержденный приказом Роспотребнадзора от 8 августа 2016 г. № 847
+</title>
+    <projectId>01/02/09-25/00160510</projectId>
+    <date>2025-09-19T10:56:32.855Z</date>
+    <stage id="20">Текст</stage>
+    <status id="20">Идет обсуждение</status>
+    <regulatoryImpact id="0">Не определена</regulatoryImpact>
+    <procedureResult id="0">Не определено</procedureResult>
+    <publishDate>2025-09-19T10:57:04.816Z</publishDate>
+    <kind id="2">Проект ведомственного акта</kind>
+    <department id="35">Роспотребнадзор</department>
+    <procedure id="1">Раскрытие информации о подготовке проектов нормативных правовых актов</procedure>
+    <responsible>Дикий Максим Андреевич</responsible>
+    <nextStageDuration>15</nextStageDuration>
+    <discussionDays>15</discussionDays>
+    <parallelStageStartDiscussion>2025-09-19T10:57:28.708Z</parallelStageStartDiscussion>
+    <parallelStageEndDiscussion>2025-09-26T10:57:28.708Z</parallelStageEndDiscussion>
+    <startDiscussion>2025-09-19T10:57:04.83Z</startDiscussion>
+    <endDiscussion>2025-10-04T10:57:04.83Z</endDiscussion>
+  </project>
+  <project id="160508">
+    <title>О внесении изменений в Порядок представления   гражданами, претендующими на замещение должностей, и работниками, замещающими должности 
+в организациях, созданных для выполнения задач, поставленных перед Федеральной службой по надзору 
+в сфере защиты прав потребителей 
+и благополучия человека, сведений 
+о своих доходах, расходах, 
+об имуществе и обязательствах имущественного характер своих супруги (супруга) 
+и несовершеннолетних детей, утвержденный приказом Роспотребнадзора от 9 декабря 2013 г. № 918</title>
+    <projectId>01/02/09-25/00160508</projectId>
+    <date>2025-09-19T10:52:59.775Z</date>
+    <stage id="20">Текст</stage>
+    <status id="20">Идет обсуждение</status>
+    <regulatoryImpact id="0">Не определена</regulatoryImpact>
+    <procedureResult id="0">Не определено</procedureResult>
+    <publishDate>2025-09-19T10:54:29.466Z</publishDate>
+    <kind id="2">Проект ведомственного акта</kind>
+    <department id="35">Роспотребнадзор</department>
+    <procedure id="1">Раскрытие информации о подготовке проектов нормативных правовых актов</procedure>
+    <responsible>Дикий Максим Андреевич</responsible>
+    <nextStageDuration>15</nextStageDuration>
+    <discussionDays>15</discussionDays>
+    <parallelStageStartDiscussion>2025-09-19T10:54:50.308Z</parallelStageStartDiscussion>
+    <parallelStageEndDiscussion>2025-09-26T10:54:50.308Z</parallelStageEndDiscussion>
+    <startDiscussion>2025-09-19T10:54:29.483Z</startDiscussion>
+    <endDiscussion>2025-10-04T10:54:29.483Z</endDiscussion>
+  </project>
+  <project id="160507">
+    <title>Об утверждении порядка выдачи удостоверений ветерана боевых действий, оформляемых на бланке, Федеральной службой по надзору в сфере защиты прав потребителей и благополучия человека</title>
+    <projectId>01/02/09-25/00160507</projectId>
+    <date>2025-09-19T10:50:00.942Z</date>
+    <stage id="20">Текст</stage>
+    <status id="20">Идет обсуждение</status>
+    <regulatoryImpact id="0">Не определена</regulatoryImpact>
+    <procedureResult id="0">Не определено</procedureResult>
+    <publishDate>2025-09-19T10:51:06.163Z</publishDate>
+    <kind id="2">Проект ведомственного акта</kind>
+    <department id="35">Роспотребнадзор</department>
+    <procedure id="1">Раскрытие информации о подготовке проектов нормативных правовых актов</procedure>
+    <responsible>Дикий Максим Андреевич</responsible>
+    <nextStageDuration>15</nextStageDuration>
+    <discussionDays>15</discussionDays>
+    <parallelStageStartDiscussion>2025-09-19T10:51:38.324Z</parallelStageStartDiscussion>
+    <parallelStageEndDiscussion>2025-09-26T10:51:38.324Z</parallelStageEndDiscussion>
+    <startDiscussion>2025-09-19T10:51:06.18Z</startDiscussion>
+    <endDiscussion>2025-10-04T10:51:06.18Z</endDiscussion>
+  </project>
+  <project id="160504">
+    <title>Проект приказа Минэнерго России "Об утверждении Порядка мониторинга и контроля за исполнением инвесторами обязательств по заключенным с ними специальным инвестиционным контрактам применительно к нефтеперерабатывающей, газоперерабатывающей, нефтегазохимической, угольной и электроэнергетической отраслям промышленности"</title>
+    <projectId>01/02/09-25/00160504</projectId>
+    <date>2025-09-19T10:14:22.306Z</date>
+    <stage id="20">Текст</stage>
+    <status id="20">Идет обсуждение</status>
+    <regulatoryImpact id="0">Не определена</regulatoryImpact>
+    <procedureResult id="0">Не определено</procedureResult>
+    <publishDate>2025-09-19T10:30:48.544Z</publishDate>
+    <kind id="2">Проект ведомственного акта</kind>
+    <department id="12">Минэнерго России</department>
+    <procedure id="1">Раскрытие информации о подготовке проектов нормативных правовых актов</procedure>
+    <responsible>Скрипова Анастасия Ильинична</responsible>
+    <nextStageDuration>15</nextStageDuration>
+    <discussionDays>15</discussionDays>
+    <parallelStageStartDiscussion>2025-09-19T10:32:52.169Z</parallelStageStartDiscussion>
+    <parallelStageEndDiscussion>2025-09-26T10:32:52.169Z</parallelStageEndDiscussion>
+    <startDiscussion>2025-09-19T10:30:48.558Z</startDiscussion>
+    <endDiscussion>2025-10-04T10:30:48.558Z</endDiscussion>
+  </project>
+  <project id="160501">
+    <title>"О внесении изменений в Порядок проведения 
+контроля за соблюдением сроков временного ввоза 
+транспортных средств для личного пользования, 
+утвержденный приказом ФТС России от 16 мая 2022 г. № 356"
+</title>
+    <projectId>01/02/09-25/00160501</projectId>
+    <date>2025-09-19T07:55:10.129Z</date>
+    <stage id="10">Уведомление</stage>
+    <status id="20">Идет обсуждение</status>
+    <regulatoryImpact id="0">Не определена</regulatoryImpact>
+    <procedureResult id="0">Не определено</procedureResult>
+    <publishDate>2025-09-19T08:01:26.481Z</publishDate>
+    <kind id="2">Проект ведомственного акта</kind>
+    <department id="38">ФТС России</department>
+    <procedure id="1">Раскрытие информации о подготовке проектов нормативных правовых актов</procedure>
+    <problem>Невывоз в установленный срок временного ввоза транспортных средств для личного пользования</problem>
+    <objectives>Проект приказа ФТС России направлен на совершенствование таможенного контроля в отношении временно ввезенных транспортных средств для личного пользования</objectives>
+    <responsible>Гвоздев Матвей Дмитриевич</responsible>
+    <circlePersons>таможенные органы, участники ВЭД; Физические лица, осуществляющие ввоз в Российскую Федерацию подакцизных и других определенных видов товаров, таможенные органы.</circlePersons>
+    <socialRelations>Проведение таможенными органами таможенного контроля в отношении временно ввезенных транспортных средств для личного пользования</socialRelations>
+    <rationale>Совершенствование таможенного контроля в отношении временно ввезенных транспортных средств для личного пользования</rationale>
+    <nextStageDuration>15</nextStageDuration>
+    <discussionDays>15</discussionDays>
+    <planDate>2025-11-01T12:00:00Z</planDate>
+    <startDiscussion>2025-09-19T08:01:26.493Z</startDiscussion>
+    <endDiscussion>2025-10-04T08:01:26.493Z</endDiscussion>
+  </project>
+  <project id="160500">
+    <title>проект постановления Правительства Российской Федерации "О внесении изменений в постановление Правительства Российской Федерации от 17 июля 2015 г. № 719"</title>
+    <projectId>02/07/09-25/00160500</projectId>
+    <date>2025-09-19T07:42:16.047Z</date>
+    <stage id="20">Текст</stage>
+    <status id="20">Идет обсуждение</status>
+    <regulatoryImpact id="1">Высокая</regulatoryImpact>
+    <procedureResult id="0">Не определено</procedureResult>
+    <publishDate>2025-09-19T08:42:32.172Z</publishDate>
+    <kind id="7">Проект постановления Правительства Российской Федерации</kind>
+    <department id="9">Минпромторг России</department>
+    <procedure id="2">Оценка регулирующего воздействия</procedure>
+    <responsible>Попова Виктория</responsible>
+    <nextStageDuration>20</nextStageDuration>
+    <discussionDays>28</discussionDays>
+    <parallelStageStartDiscussion>2025-09-19T08:42:32.181Z</parallelStageStartDiscussion>
+    <parallelStageEndDiscussion>2025-10-09T08:42:32.181Z</parallelStageEndDiscussion>
+    <startDiscussion>2025-09-19T08:42:32.187Z</startDiscussion>
+    <endDiscussion>2025-10-17T08:42:32.187Z</endDiscussion>
+  </project>
+  <project id="160499">
+    <title>О внесении изменений в постановление Правительства 
+Российской Федерации от 7 сентября 2018 г. № 1065</title>
+    <projectId>01/01/09-25/00160499</projectId>
+    <date>2025-09-19T07:35:54.668Z</date>
+    <stage id="20">Текст</stage>
+    <status id="20">Идет обсуждение</status>
+    <regulatoryImpact id="0">Не определена</regulatoryImpact>
+    <procedureResult id="0">Не определено</procedureResult>
+    <publishDate>2025-09-19T15:02:34.389Z</publishDate>
+    <kind id="1">Проект постановления Правительства Российской Федерации</kind>
+    <department id="122">Минцифры России</department>
+    <procedure id="1">Раскрытие информации о подготовке проектов нормативных правовых актов</procedure>
+    <responsible>Новоженов Иван</responsible>
+    <nextStageDuration>15</nextStageDuration>
+    <discussionDays>15</discussionDays>
+    <parallelStageStartDiscussion>2025-09-19T15:03:38.542Z</parallelStageStartDiscussion>
+    <parallelStageEndDiscussion>2025-09-26T15:03:38.542Z</parallelStageEndDiscussion>
+    <startDiscussion>2025-09-19T15:02:34.406Z</startDiscussion>
+    <endDiscussion>2025-10-04T15:02:34.406Z</endDiscussion>
+  </project>
+  <project id="160498">
+    <title>Об утверждении Перечня индикаторов риска нарушения обязательных требований для федерального государственного контроля (надзора)
+ в области охраны и использования особо охраняемых природных территорий
+</title>
+    <projectId>01/02/09-25/00160498</projectId>
+    <date>2025-09-19T07:18:54.423Z</date>
+    <stage id="20">Текст</stage>
+    <status id="20">Идет обсуждение</status>
+    <regulatoryImpact id="0">Не определена</regulatoryImpact>
+    <procedureResult id="0">Не определено</procedureResult>
+    <publishDate>2025-09-19T07:22:43.283Z</publishDate>
+    <kind id="2">Проект ведомственного акта</kind>
+    <department id="14">Минприроды России</department>
+    <procedure id="1">Раскрытие информации о подготовке проектов нормативных правовых актов</procedure>
+    <responsible>Зуев Владислав Валерьевич</responsible>
+    <nextStageDuration>15</nextStageDuration>
+    <discussionDays>15</discussionDays>
+    <parallelStageStartDiscussion>2025-09-19T07:26:10.192Z</parallelStageStartDiscussion>
+    <parallelStageEndDiscussion>2025-09-26T07:26:10.192Z</parallelStageEndDiscussion>
+    <startDiscussion>2025-09-19T07:22:43.296Z</startDiscussion>
+    <endDiscussion>2025-10-04T07:22:43.296Z</endDiscussion>
+  </project>
+  <project id="160497">
+    <title>Об утверждении перечня должностных лиц Федеральной службы по финансовому мониторингу, имеющих право направлять адвокатам, доверительным собственникам (управляющим) иностранной структуры без образования юридического лица, исполнительным органам личного фонда (кроме наследственного фонда), в том числе международного личного фонда (кроме международного наследственного фонда), лицам, осуществляющим предпринимательскую деятельность в сфере оказания юридических или бухгалтерских услуг, лицам, осуществляющим майнинг цифровой валюты (в том числе участникам майнинг-пула), лицам, организующим деятельность майнинг-пула, нотариусам, аудиторским организациям и индивидуальным аудиторам запросы в электронной форме и в письменном виде о представлении информации, а также форм таких письменных запросов
+
+</title>
+    <projectId>01/02/09-25/00160497</projectId>
+    <date>2025-09-19T07:03:05.544Z</date>
+    <stage id="20">Текст</stage>
+    <status id="20">Идет обсуждение</status>
+    <regulatoryImpact id="0">Не определена</regulatoryImpact>
+    <procedureResult id="0">Не определено</procedureResult>
+    <publishDate>2025-09-19T07:05:21.371Z</publishDate>
+    <kind id="2">Проект ведомственного акта</kind>
+    <department id="50">Росфинмониторинг</department>
+    <procedure id="1">Раскрытие информации о подготовке проектов нормативных правовых актов</procedure>
+    <responsible>Павлов Александр Викторович</responsible>
+    <nextStageDuration>15</nextStageDuration>
+    <discussionDays>15</discussionDays>
+    <parallelStageStartDiscussion>2025-09-19T07:06:10.401Z</parallelStageStartDiscussion>
+    <parallelStageEndDiscussion>2025-10-04T07:06:10.401Z</parallelStageEndDiscussion>
+    <startDiscussion>2025-09-19T07:05:21.385Z</startDiscussion>
+    <endDiscussion>2025-10-04T07:05:21.385Z</endDiscussion>
+  </project>
+  <project id="160496">
+    <title>Об утверждении перечня должностных лиц Федеральной службы по финансовому мониторингу, имеющих право направлять адвокатам, доверительным собственникам (управляющим) иностранной структуры без образования юридического лица, исполнительным органам личного фонда (кроме наследственного фонда), в том числе международного личного фонда (кроме международного наследственного фонда), лицам, осуществляющим предпринимательскую деятельность в сфере оказания юридических или бухгалтерских услуг, лицам, осуществляющим майнинг цифровой валюты (в том числе участникам майнинг-пула), лицам, организующим деятельность майнинг-пула, нотариусам, аудиторским организациям и индивидуальным аудиторам запросы в электронной форме и в письменном виде о представлении информации, а также форм таких письменных запросов
+</title>
+    <projectId>04/15/09-25/00160496</projectId>
+    <date>2025-09-19T06:52:41.144Z</date>
+    <stage id="20">Текст</stage>
+    <status id="20">Идет обсуждение</status>
+    <regulatoryImpact id="0">Не определена</regulatoryImpact>
+    <procedureResult id="0">Не определено</procedureResult>
+    <publishDate>2025-09-19T07:00:03.297Z</publishDate>
+    <kind id="16">Проект ведомственного акта</kind>
+    <department id="50">Росфинмониторинг</department>
+    <procedure id="5">Независимая антикоррупционная экспертиза</procedure>
+    <responsible>Павлов Александр Викторович</responsible>
+    <parallelStageStartDiscussion>2025-09-19T07:00:03.308Z</parallelStageStartDiscussion>
+    <parallelStageEndDiscussion>2025-10-04T07:00:03.308Z</parallelStageEndDiscussion>
+  </project>
+  <project id="160495">
+    <title>О внесении изменений в Особенности организации оказания медицинской помощи военнослужащим Вооруженных Сил Российской Федерации и гражданам, призванным на военные сборы, проводимые в Вооруженных Силах Российской Федерации, в том числе порядок их освобождения от исполнения обязанностей военной службы в связи с заболеванием и иными причинами, установленные приказом Министра обороны Российской Федерации от 28 августа 2023 г. № 553</title>
+    <projectId>01/02/09-25/00160495</projectId>
+    <date>2025-09-18T18:03:10.201Z</date>
+    <stage id="20">Текст</stage>
+    <status id="20">Идет обсуждение</status>
+    <regulatoryImpact id="0">Не определена</regulatoryImpact>
+    <procedureResult id="0">Не определено</procedureResult>
+    <publishDate>2025-09-18T18:06:16.706Z</publishDate>
+    <kind id="2">Проект ведомственного акта</kind>
+    <department id="46">Минобороны России</department>
+    <procedure id="1">Раскрытие информации о подготовке проектов нормативных правовых актов</procedure>
+    <responsible>Земляков Сергей Владимирович</responsible>
+    <nextStageDuration>15</nextStageDuration>
+    <discussionDays>15</discussionDays>
+    <parallelStageStartDiscussion>2025-09-18T18:07:00.873Z</parallelStageStartDiscussion>
+    <parallelStageEndDiscussion>2025-09-25T18:07:00.873Z</parallelStageEndDiscussion>
+    <startDiscussion>2025-09-18T18:06:16.719Z</startDiscussion>
+    <endDiscussion>2025-10-03T18:06:16.719Z</endDiscussion>
+  </project>
+  <project id="160494">
+    <title>О внесении изменений в долю заработной платы в структуре среднего норматива финансовых затрат на единицу объема высокотехнологичной медицинской помощи, не включенной в базовую программу обязательного медицинского страхования, оказываемой гражданам Российской Федерации федеральными государственными учреждениями и медицинскими организациями частной системы здравоохранения, j-го профиля, утвержденную приказом Министерства здравоохранения Российской Федерации от 10 января 2025 г. № 3н</title>
+    <projectId>01/02/09-25/00160494</projectId>
+    <date>2025-09-18T17:44:25.102Z</date>
+    <stage id="20">Текст</stage>
+    <status id="20">Идет обсуждение</status>
+    <regulatoryImpact id="0">Не определена</regulatoryImpact>
+    <procedureResult id="0">Не определено</procedureResult>
+    <publishDate>2025-09-18T17:46:55.063Z</publishDate>
+    <kind id="2">Проект ведомственного акта</kind>
+    <department id="11">Минздрав России</department>
+    <procedure id="1">Раскрытие информации о подготовке проектов нормативных правовых актов</procedure>
+    <responsible>Филиппов Олег Анатольевич</responsible>
+    <nextStageDuration>15</nextStageDuration>
+    <discussionDays>15</discussionDays>
+    <parallelStageStartDiscussion>2025-09-18T17:48:27.212Z</parallelStageStartDiscussion>
+    <parallelStageEndDiscussion>2025-10-01T17:48:27.212Z</parallelStageEndDiscussion>
+    <startDiscussion>2025-09-18T17:46:55.077Z</startDiscussion>
+    <endDiscussion>2025-10-03T17:46:55.077Z</endDiscussion>
+  </project>
+  <project id="160493">
+    <title>О внесении изменения в статью 217 части второй Налогового кодекса Российской Федерации</title>
+    <projectId>01/05/09-25/00160493</projectId>
+    <date>2025-09-18T16:40:06.93Z</date>
+    <stage id="20">Текст</stage>
+    <status id="20">Идет обсуждение</status>
+    <regulatoryImpact id="0">Не определена</regulatoryImpact>
+    <procedureResult id="0">Не определено</procedureResult>
+    <publishDate>2025-09-18T16:51:54.173Z</publishDate>
+    <kind id="6">Проект федерального закона</kind>
+    <department id="122">Минцифры России</department>
+    <procedure id="1">Раскрытие информации о подготовке проектов нормативных правовых актов</procedure>
+    <responsible>Михайловская  Александра</responsible>
+    <nextStageDuration>15</nextStageDuration>
+    <discussionDays>15</discussionDays>
+    <parallelStageStartDiscussion>2025-09-18T16:52:07.656Z</parallelStageStartDiscussion>
+    <parallelStageEndDiscussion>2025-09-25T16:52:07.656Z</parallelStageEndDiscussion>
+    <startDiscussion>2025-09-18T16:51:54.187Z</startDiscussion>
+    <endDiscussion>2025-10-03T16:51:54.187Z</endDiscussion>
+  </project>
+  <project id="160492">
+    <title>Об утверждении положения о спортивных судьях</title>
+    <projectId>01/02/09-25/00160492</projectId>
+    <date>2025-09-18T16:22:04.156Z</date>
+    <stage id="10">Уведомление</stage>
+    <status id="20">Идет обсуждение</status>
+    <regulatoryImpact id="0">Не определена</regulatoryImpact>
+    <procedureResult id="0">Не определено</procedureResult>
+    <publishDate>2025-09-18T16:48:54.247Z</publishDate>
+    <kind id="2">Проект ведомственного акта</kind>
+    <department id="22">Минспорт России</department>
+    <procedure id="1">Раскрытие информации о подготовке проектов нормативных правовых актов</procedure>
+    <problem>Положение о спортивных судьях утверждается уполномоченным Правительством Российской Федерации федеральным органом исполнительной власти согласно части 8 статьи 22 Федерального закона от 04.12.2007 № 329-ФЗ «О физической культуре и спорте в Российской Федерации» (Собрание законодательства Российской Федерации, 2007, № 50, ст. 6242; 2008, № 30, ст. 3616) и подпунктом 4.2.4 пункта 4 Положения о Министерстве спорта Российской Федерации, утвержденного постановлением Правительства Российской Федерации от 19.06.2012 № 607 (Собрание законодательства Российской Федерации, 2012, № 26, ст. 3525)</problem>
+    <responsible>Адамантова Анна</responsible>
+    <circlePersons>судьи; Представители общероссийской и региональных спортивных федераций</circlePersons>
+    <socialRelations>Правовые отношения между спортивными судьями и органами исполнительной власти</socialRelations>
+    <rationale>Уточнение в положение</rationale>
+    <nextStageDuration>15</nextStageDuration>
+    <discussionDays>15</discussionDays>
+    <planDate>2025-12-31T12:00:00Z</planDate>
+    <startDiscussion>2025-09-18T16:48:54.256Z</startDiscussion>
+    <endDiscussion>2025-10-03T16:48:54.256Z</endDiscussion>
+  </project>
+  <project id="160491">
+    <title>О внесении изменений в Порядок проведения конкурса по распределению контрольных цифр приема по специальностям и направлениям подготовки и (или) укрупненным группам специальностей и направлений подготовки для обучения по образовательным программам высшего образования, а также по группам научных специальностей и (или) научным специальностям для обучения по программам подготовки научных и научно-педагогических кадров в аспирантуре (адъюнктуре) за счет бюджетных ассигнований федерального бюджета, утвержденный приказом Министерства науки и высшего образования Российской Федерации от 28 августа 2023 г. № 824</title>
+    <projectId>01/02/09-25/00160491</projectId>
+    <date>2025-09-18T16:01:58.297Z</date>
+    <stage id="20">Текст</stage>
+    <status id="20">Идет обсуждение</status>
+    <regulatoryImpact id="0">Не определена</regulatoryImpact>
+    <procedureResult id="0">Не определено</procedureResult>
+    <publishDate>2025-09-18T16:26:04.303Z</publishDate>
+    <kind id="2">Проект ведомственного акта</kind>
+    <department id="13">Минобрнауки России</department>
+    <procedure id="1">Раскрытие информации о подготовке проектов нормативных правовых актов</procedure>
+    <responsible>Борунова  Мария</responsible>
+    <nextStageDuration>15</nextStageDuration>
+    <discussionDays>15</discussionDays>
+    <parallelStageStartDiscussion>2025-09-18T16:26:18.893Z</parallelStageStartDiscussion>
+    <parallelStageEndDiscussion>2025-09-25T16:26:18.893Z</parallelStageEndDiscussion>
+    <startDiscussion>2025-09-18T16:26:04.329Z</startDiscussion>
+    <endDiscussion>2025-10-03T16:26:04.329Z</endDiscussion>
+  </project>
+  <project id="160490">
+    <title>Утверждение справочника по соотнесению федеральных органов власти Российской Федерации и разделов Общероссийского классификатора видов экономической деятельности</title>
+    <projectId>01/23/09-25/00160490</projectId>
+    <date>2025-09-18T15:30:31.614Z</date>
+    <stage id="20">Текст</stage>
+    <status id="20">Идет обсуждение</status>
+    <regulatoryImpact id="0">Не определена</regulatoryImpact>
+    <procedureResult id="0">Не определено</procedureResult>
+    <publishDate>2025-09-18T15:55:23.497Z</publishDate>
+    <kind id="27">Распоряжение правительства РФ</kind>
+    <department id="6">Минэкономразвития России</department>
+    <procedure id="1">Раскрытие информации о подготовке проектов нормативных правовых актов</procedure>
+    <responsible>Шипилов Михаил</responsible>
+    <nextStageDuration>15</nextStageDuration>
+    <discussionDays>15</discussionDays>
+    <startDiscussion>2025-09-18T15:55:23.509Z</startDiscussion>
+    <endDiscussion>2025-10-03T15:55:23.509Z</endDiscussion>
+  </project>
+  <project id="160489">
+    <title>Об утверждении Правил маркировки отдельных видов полимерной трубной продукции и продукции, используемой для ее производства, средствами идентификации и особенностях внедрения государственной информационной системы мониторинга за оборотом товаров, подлежащих обязательной маркировке средствами идентификации, в отношении отдельных видов полимерной трубной продукции и продукции, используемой для ее производства
+</title>
+    <projectId>02/07/09-25/00160489</projectId>
+    <date>2025-09-18T15:30:30.068Z</date>
+    <stage id="20">Текст</stage>
+    <status id="20">Идет обсуждение</status>
+    <regulatoryImpact id="1">Высокая</regulatoryImpact>
+    <procedureResult id="0">Не определено</procedureResult>
+    <publishDate>2025-09-19T08:27:05.129Z</publishDate>
+    <kind id="7">Проект постановления Правительства Российской Федерации</kind>
+    <department id="9">Минпромторг России</department>
+    <procedure id="2">Оценка регулирующего воздействия</procedure>
+    <responsible>Хадонов Давид Таймуразович</responsible>
+    <nextStageDuration>20</nextStageDuration>
+    <discussionDays>28</discussionDays>
+    <parallelStageStartDiscussion>2025-09-19T08:27:05.159Z</parallelStageStartDiscussion>
+    <parallelStageEndDiscussion>2025-09-26T08:27:05.159Z</parallelStageEndDiscussion>
+    <startDiscussion>2025-09-19T08:27:05.142Z</startDiscussion>
+    <endDiscussion>2025-10-17T08:27:05.142Z</endDiscussion>
+  </project>
+  <project id="160488">
+    <title>Об утверждении Порядка размещения предупредительной маркировки, предусмотренной частью 4 статьи 4 Федерального закона «О государственном регулировании оборота метанола и метанолсодержащих жидкостей», вида упаковки (тары), на которой размещается предупредительная маркировка</title>
+    <projectId>02/08/09-25/00160488</projectId>
+    <date>2025-09-18T15:27:25.63Z</date>
+    <stage id="20">Текст</stage>
+    <status id="20">Идет обсуждение</status>
+    <regulatoryImpact id="3">Низкая</regulatoryImpact>
+    <procedureResult id="0">Не определено</procedureResult>
+    <publishDate>2025-09-18T15:41:54.586Z</publishDate>
+    <kind id="9">Проект ведомственного акта</kind>
+    <department id="9">Минпромторг России</department>
+    <procedure id="2">Оценка регулирующего воздействия</procedure>
+    <responsible>Ревишвили Александр Александрович</responsible>
+    <nextStageDuration>5</nextStageDuration>
+    <discussionDays>7</discussionDays>
+    <parallelStageStartDiscussion>2025-09-18T15:41:54.609Z</parallelStageStartDiscussion>
+    <parallelStageEndDiscussion>2025-09-25T15:41:54.609Z</parallelStageEndDiscussion>
+    <startDiscussion>2025-09-18T15:41:54.602Z</startDiscussion>
+    <endDiscussion>2025-09-25T15:41:54.602Z</endDiscussion>
+  </project>
+  <project id="160487">
+    <title>Проект постановления Правительства Российской Федерации "О внесении изменений в пункт 10 Правил предоставления и распределения иных межбюджетных трансфертов из федерального бюджета бюджетам субъектов Российской Федерации, бюджетам г. Байконура и федеральной территории "Сириус" на обеспечение выплат ежемесячного денежного вознаграждения советникам директоров по воспитанию и взаимодействию
+с детскими общественными объединениями государственных общеобразовательных организаций и профессиональных образовательных организаций субъектов Российской Федерации, г. Байконура и федеральной территории "Сириус", муниципальных общеобразовательных организаций
+и профессиональных образовательных организаций, утвержденных постановлением Правительства Российской Федерации от 30 мая 2024 г. № 717"</title>
+    <projectId>01/01/09-25/00160487</projectId>
+    <date>2025-09-18T15:23:26.439Z</date>
+    <stage id="20">Текст</stage>
+    <status id="20">Идет обсуждение</status>
+    <regulatoryImpact id="0">Не определена</regulatoryImpact>
+    <procedureResult id="0">Не определено</procedureResult>
+    <publishDate>2025-09-18T15:45:06.42Z</publishDate>
+    <kind id="1">Проект постановления Правительства Российской Федерации</kind>
+    <department id="119">Минпросвещения России</department>
+    <procedure id="1">Раскрытие информации о подготовке проектов нормативных правовых актов</procedure>
+    <responsible>Мазин Алексей Викторович</responsible>
+    <nextStageDuration>15</nextStageDuration>
+    <discussionDays>15</discussionDays>
+    <startDiscussion>2025-09-18T15:45:06.434Z</startDiscussion>
+    <endDiscussion>2025-10-03T15:45:06.434Z</endDiscussion>
+  </project>
+  <project id="160486">
+    <title>Об утверждении Правил уничтожения метанола и метанолсодержащих жидкостей</title>
+    <projectId>02/07/09-25/00160486</projectId>
+    <date>2025-09-18T15:03:17.062Z</date>
+    <stage id="20">Текст</stage>
+    <status id="20">Идет обсуждение</status>
+    <regulatoryImpact id="3">Низкая</regulatoryImpact>
+    <procedureResult id="0">Не определено</procedureResult>
+    <publishDate>2025-09-18T15:24:42.526Z</publishDate>
+    <kind id="7">Проект постановления Правительства Российской Федерации</kind>
+    <department id="9">Минпромторг России</department>
+    <procedure id="2">Оценка регулирующего воздействия</procedure>
+    <responsible>Ревишвили Александр Александрович</responsible>
+    <nextStageDuration>10</nextStageDuration>
+    <discussionDays>14</discussionDays>
+    <parallelStageStartDiscussion>2025-09-18T15:24:42.548Z</parallelStageStartDiscussion>
+    <parallelStageEndDiscussion>2025-09-25T15:24:42.548Z</parallelStageEndDiscussion>
+    <startDiscussion>2025-09-18T15:24:42.541Z</startDiscussion>
+    <endDiscussion>2025-10-02T15:24:42.541Z</endDiscussion>
+  </project>
+  <project id="160485">
+    <title>О внесении изменений в постановление Правительства Российской Федерации от 15 апреля 2014 г. № 316</title>
+    <projectId>01/01/09-25/00160485</projectId>
+    <date>2025-09-18T14:40:28.539Z</date>
+    <stage id="10">Уведомление</stage>
+    <status id="20">Идет обсуждение</status>
+    <regulatoryImpact id="0">Не определена</regulatoryImpact>
+    <procedureResult id="0">Не определено</procedureResult>
+    <publishDate>2025-09-18T14:45:52.699Z</publishDate>
+    <kind id="1">Проект постановления Правительства Российской Федерации</kind>
+    <department id="6">Минэкономразвития России</department>
+    <procedure id="1">Раскрытие информации о подготовке проектов нормативных правовых актов</procedure>
+    <problem>Изменения в постановление Правительства Российской Федерации от 15 апреля 2014 г. № 316</problem>
+    <responsible>Сушкина Анна Владимировна</responsible>
+    <circlePersons>Субъекты Российской Федерации</circlePersons>
+    <socialRelations>-</socialRelations>
+    <rationale>Продление срока реализации Государственного плана до 2029/30 учебного года, актуализация  Правил в связи с изменениями отдельных пунктов Правил формирования, предоставления и распределения субсидий из федерального бюджета бюджетам субъектов Российской Федерации, утвержденные постановлением Правительства Российской Федерации от 30 сентября 2014 г. № 999</rationale>
+    <nextStageDuration>15</nextStageDuration>
+    <discussionDays>15</discussionDays>
+    <planDate>2025-12-01T12:00:00Z</planDate>
+    <startDiscussion>2025-09-18T14:45:52.711Z</startDiscussion>
+    <endDiscussion>2025-10-03T14:45:52.711Z</endDiscussion>
+  </project>
+  <project id="160484">
+    <title>Об утверждении Правил формирования и ведения перечня российских программ для электронных вычислительных машин и баз данных, разработанных и используемых для собственных нужд российскими юридическими лицами</title>
+    <projectId>02/07/09-25/00160484</projectId>
+    <date>2025-09-18T14:40:19.763Z</date>
+    <stage id="20">Текст</stage>
+    <status id="20">Идет обсуждение</status>
+    <regulatoryImpact id="3">Низкая</regulatoryImpact>
+    <procedureResult id="0">Не определено</procedureResult>
+    <publishDate>2025-09-19T15:00:52.229Z</publishDate>
+    <kind id="7">Проект постановления Правительства Российской Федерации</kind>
+    <department id="122">Минцифры России</department>
+    <procedure id="2">Оценка регулирующего воздействия</procedure>
+    <responsible>Новоженов Иван</responsible>
+    <nextStageDuration>10</nextStageDuration>
+    <discussionDays>14</discussionDays>
+    <parallelStageStartDiscussion>2025-09-19T15:00:52.257Z</parallelStageStartDiscussion>
+    <parallelStageEndDiscussion>2025-09-26T15:00:52.257Z</parallelStageEndDiscussion>
+    <startDiscussion>2025-09-19T15:00:52.241Z</startDiscussion>
+    <endDiscussion>2025-10-03T15:00:52.241Z</endDiscussion>
+  </project>
+  <project id="160483">
+    <title>О федеральном органе исполнительной власти, 
+уполномоченном по увековечению памяти
+ жертв геноцида советского народа, и о внесении изменений в постановление Правительства Российской Федерации от 20 июля 2011 г. № 590  
+</title>
+    <projectId>01/01/09-25/00160483</projectId>
+    <date>2025-09-18T14:34:35.822Z</date>
+    <stage id="20">Текст</stage>
+    <status id="20">Идет обсуждение</status>
+    <regulatoryImpact id="0">Не определена</regulatoryImpact>
+    <procedureResult id="0">Не определено</procedureResult>
+    <publishDate>2025-09-18T15:04:18.41Z</publishDate>
+    <kind id="1">Проект постановления Правительства Российской Федерации</kind>
+    <department id="8">Минкультуры России</department>
+    <procedure id="1">Раскрытие информации о подготовке проектов нормативных правовых актов</procedure>
+    <responsible>Синикова Ирина Васильевна</responsible>
+    <nextStageDuration>15</nextStageDuration>
+    <discussionDays>15</discussionDays>
+    <parallelStageStartDiscussion>2025-09-18T15:09:39.665Z</parallelStageStartDiscussion>
+    <parallelStageEndDiscussion>2025-09-25T15:09:39.665Z</parallelStageEndDiscussion>
+    <startDiscussion>2025-09-18T15:04:18.434Z</startDiscussion>
+    <endDiscussion>2025-10-03T15:04:18.434Z</endDiscussion>
+  </project>
+  <project id="160482">
+    <title>О внесении изменений в некоторые акты Правительства Российской Федерации
+</title>
+    <projectId>01/01/09-25/00160482</projectId>
+    <date>2025-09-18T14:29:56.256Z</date>
+    <stage id="20">Текст</stage>
+    <status id="20">Идет обсуждение</status>
+    <regulatoryImpact id="0">Не определена</regulatoryImpact>
+    <procedureResult id="0">Не определено</procedureResult>
+    <publishDate>2025-09-18T14:31:10.901Z</publishDate>
+    <kind id="1">Проект постановления Правительства Российской Федерации</kind>
+    <department id="11">Минздрав России</department>
+    <procedure id="1">Раскрытие информации о подготовке проектов нормативных правовых актов</procedure>
+    <responsible>Вергун Екатерина Сергеевна</responsible>
+    <nextStageDuration>15</nextStageDuration>
+    <discussionDays>15</discussionDays>
+    <parallelStageStartDiscussion>2025-09-18T14:31:51.578Z</parallelStageStartDiscussion>
+    <parallelStageEndDiscussion>2025-10-01T14:31:51.578Z</parallelStageEndDiscussion>
+    <startDiscussion>2025-09-18T14:31:10.92Z</startDiscussion>
+    <endDiscussion>2025-10-03T14:31:10.92Z</endDiscussion>
+  </project>
+  <project id="160481">
+    <title>Об утверждении порядка предоставления специального разрешения на осуществление международных автомобильных перевозок опасных грузов, порядка формирования и ведения реестра специальных разрешений
+на осуществление международных автомобильных перевозок опасных грузов, порядка предоставления содержащихся в нем сведений, порядка межведомственного информационного взаимодействия по вопросам предоставления сведений, содержащихся в указанном реестре, а также формы выписки из реестра специальных разрешений на осуществление международных автомобильных перевозок опасных грузов</title>
+    <projectId>02/08/09-25/00160481</projectId>
+    <date>2025-09-18T14:29:11.548Z</date>
+    <stage id="20">Текст</stage>
+    <status id="20">Идет обсуждение</status>
+    <regulatoryImpact id="3">Низкая</regulatoryImpact>
+    <procedureResult id="0">Не определено</procedureResult>
+    <publishDate>2025-09-18T15:03:57.325Z</publishDate>
+    <kind id="9">Проект ведомственного акта</kind>
+    <department id="21">Минтранс России</department>
+    <procedure id="2">Оценка регулирующего воздействия</procedure>
+    <responsible>Поляшов Сергей Сергеевич</responsible>
+    <nextStageDuration>5</nextStageDuration>
+    <discussionDays>7</discussionDays>
+    <parallelStageStartDiscussion>2025-09-18T15:03:57.361Z</parallelStageStartDiscussion>
+    <parallelStageEndDiscussion>2025-09-25T15:03:57.361Z</parallelStageEndDiscussion>
+    <startDiscussion>2025-09-18T15:03:57.34Z</startDiscussion>
+    <endDiscussion>2025-09-25T15:03:57.34Z</endDiscussion>
+  </project>
+  <project id="160480">
+    <title>проект постановления Правительства Российской Федерации «Об утверждении Порядка заключения соглашений о разработке и(или) модернизации программ для электронных вычислительных машин и баз данных в целях импортозамещения программного обеспечения для реализации особо значимых проектов»</title>
+    <projectId>02/07/09-25/00160480</projectId>
+    <date>2025-09-18T14:11:16.729Z</date>
+    <stage id="20">Текст</stage>
+    <status id="20">Идет обсуждение</status>
+    <regulatoryImpact id="1">Высокая</regulatoryImpact>
+    <procedureResult id="0">Не определено</procedureResult>
+    <publishDate>2025-09-19T15:07:00.938Z</publishDate>
+    <kind id="7">Проект постановления Правительства Российской Федерации</kind>
+    <department id="122">Минцифры России</department>
+    <procedure id="2">Оценка регулирующего воздействия</procedure>
+    <responsible>Новоженов Иван</responsible>
+    <nextStageDuration>20</nextStageDuration>
+    <discussionDays>28</discussionDays>
+    <parallelStageStartDiscussion>2025-09-19T15:07:00.955Z</parallelStageStartDiscussion>
+    <parallelStageEndDiscussion>2025-09-26T15:07:00.955Z</parallelStageEndDiscussion>
+    <startDiscussion>2025-09-19T15:07:00.949Z</startDiscussion>
+    <endDiscussion>2025-10-17T15:07:00.949Z</endDiscussion>
+  </project>
+  <project id="160479">
+    <title>О внесении изменений в приказ Министра обороны Российской Федерации и Следственного комитета Российской Федерации от 17 июля 2019 г. № 392/75 «Об утверждении Порядка выделения военным следственным органам Следственного комитета Российской Федерации жилых помещений специализированного жилищного фонда Министерства обороны Российской Федерации 
+и Порядка заключения с военнослужащими военных следственных органов Следственного комитета Российской Федерации договоров найма жилого помещения специализированного жилищного фонда 
+Министерства обороны Российской Федерации
+</title>
+    <projectId>01/02/09-25/00160479</projectId>
+    <date>2025-09-18T14:11:12.197Z</date>
+    <stage id="20">Текст</stage>
+    <status id="20">Идет обсуждение</status>
+    <regulatoryImpact id="0">Не определена</regulatoryImpact>
+    <procedureResult id="0">Не определено</procedureResult>
+    <publishDate>2025-09-18T14:21:41.495Z</publishDate>
+    <kind id="2">Проект ведомственного акта</kind>
+    <department id="46">Минобороны России</department>
+    <procedure id="1">Раскрытие информации о подготовке проектов нормативных правовых актов</procedure>
+    <responsible>Кадомская   Алена Вячеславовна</responsible>
+    <nextStageDuration>15</nextStageDuration>
+    <discussionDays>15</discussionDays>
+    <startDiscussion>2025-09-18T14:21:41.639Z</startDiscussion>
+    <endDiscussion>2025-10-03T14:21:41.639Z</endDiscussion>
+  </project>
+  <project id="160478">
+    <title>О внесении изменений в постановление Правительства Российской Федерации от 15 апреля 2014 г. № 298</title>
+    <projectId>01/01/09-25/00160478</projectId>
+    <date>2025-09-18T14:06:46.54Z</date>
+    <stage id="20">Текст</stage>
+    <status id="20">Идет обсуждение</status>
+    <regulatoryImpact id="0">Не определена</regulatoryImpact>
+    <procedureResult id="0">Не определено</procedureResult>
+    <publishDate>2025-09-18T14:12:20.138Z</publishDate>
+    <kind id="1">Проект постановления Правительства Российской Федерации</kind>
+    <department id="4">Минтруд России</department>
+    <procedure id="1">Раскрытие информации о подготовке проектов нормативных правовых актов</procedure>
+    <responsible>Абросимов  Валерий  Валерьевич</responsible>
+    <nextStageDuration>15</nextStageDuration>
+    <discussionDays>15</discussionDays>
+    <parallelStageStartDiscussion>2025-09-18T14:19:46.638Z</parallelStageStartDiscussion>
+    <parallelStageEndDiscussion>2025-09-25T14:19:46.638Z</parallelStageEndDiscussion>
+    <startDiscussion>2025-09-18T14:12:20.294Z</startDiscussion>
+    <endDiscussion>2025-10-03T14:12:20.294Z</endDiscussion>
+  </project>
+  <project id="160477">
+    <title>Об утверждении стандартов медицинской помощи взрослым при злокачественных новообразованиях щитовидной железы
+</title>
+    <projectId>01/02/09-25/00160477</projectId>
+    <date>2025-09-18T13:22:49.082Z</date>
+    <stage id="20">Текст</stage>
+    <status id="20">Идет обсуждение</status>
+    <regulatoryImpact id="0">Не определена</regulatoryImpact>
+    <procedureResult id="0">Не определено</procedureResult>
+    <publishDate>2025-09-18T13:25:24.622Z</publishDate>
+    <kind id="2">Проект ведомственного акта</kind>
+    <department id="11">Минздрав России</department>
+    <procedure id="1">Раскрытие информации о подготовке проектов нормативных правовых актов</procedure>
+    <responsible>Вергун Екатерина Сергеевна</responsible>
+    <nextStageDuration>15</nextStageDuration>
+    <discussionDays>15</discussionDays>
+    <parallelStageStartDiscussion>2025-09-18T13:26:00.498Z</parallelStageStartDiscussion>
+    <parallelStageEndDiscussion>2025-10-01T13:26:00.498Z</parallelStageEndDiscussion>
+    <startDiscussion>2025-09-18T13:25:24.696Z</startDiscussion>
+    <endDiscussion>2025-10-03T13:25:24.696Z</endDiscussion>
+  </project>
+</projects>
+```

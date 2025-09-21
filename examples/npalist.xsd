@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="projects">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="500" minOccurs="0" name="project">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:choice maxOccurs="unbounded">
+                <xs:element name="title" type="xs:string"/>
+                <xs:element name="projectId" type="xs:string"/>
+                <xs:element name="date" type="xs:dateTime"/>
+                <xs:element name="stage">
+                  <xs:complexType>
+                    <xs:simpleContent>
+                      <xs:extension base="xs:string">
+                        <xs:attribute name="id" type="xs:integer" use="required"/>
+                      </xs:extension>
+                    </xs:simpleContent>
+                  </xs:complexType>
+                </xs:element>
+                <xs:element name="status">
+                  <xs:complexType>
+                    <xs:simpleContent>
+                      <xs:extension base="xs:string">
+                        <xs:attribute name="id" type="xs:integer" use="required"/>
+                      </xs:extension>
+                    </xs:simpleContent>
+                  </xs:complexType>
+                </xs:element>
+                <xs:element name="department">
+                  <xs:complexType>
+                    <xs:simpleContent>
+                      <xs:extension base="xs:string">
+                        <xs:attribute name="id" type="xs:integer" use="required"/>
+                      </xs:extension>
+                    </xs:simpleContent>
+                  </xs:complexType>
+                </xs:element>
+                <xs:element name="procedure">
+                  <xs:complexType>
+                    <xs:simpleContent>
+                      <xs:extension base="xs:string">
+                        <xs:attribute name="id" type="xs:integer" use="required"/>
+                      </xs:extension>
+                    </xs:simpleContent>
+                  </xs:complexType>
+                </xs:element>
+                <xs:element name="problem" type="xs:string"/>
+                <xs:element name="objectives" type="xs:string"/>
+                <xs:element name="responsible" type="xs:string"/>
+                <xs:element name="circlePersons" type="xs:string"/>
+                <xs:element name="socialRelations" type="xs:string"/>
+                <xs:element name="rationale" type="xs:string"/>
+                <xs:element name="planDate" type="xs:dateTime"/>
+                <xs:element name="transitionPeriod" type="xs:integer"/>
+                <xs:element name="regulatoryImpact">
+                  <xs:complexType>
+                    <xs:simpleContent>
+                      <xs:extension base="xs:string">
+                        <xs:attribute name="id" type="xs:integer" use="required"/>
+                      </xs:extension>
+                    </xs:simpleContent>
+                  </xs:complexType>
+                </xs:element>
+                <xs:element name="procedureStartDate" type="xs:dateTime"/>
+                <xs:element name="procedureEndDate" type="xs:dateTime"/>
+                <xs:element name="procedureResult">
+                  <xs:complexType>
+                    <xs:simpleContent>
+                      <xs:extension base="xs:string">
+                        <xs:attribute name="id" type="xs:integer" use="required"/>
+                      </xs:extension>
+                    </xs:simpleContent>
+                  </xs:complexType>
+                </xs:element>
+                <xs:element name="parallelStageFile">
+                  <xs:complexType>
+                    <xs:simpleContent>
+                      <xs:extension base="xs:string">
+                        <xs:attribute name="id" type="xs:string" use="required"/>
+                      </xs:extension>
+                    </xs:simpleContent>
+                  </xs:complexType>
+                </xs:element>
+                <xs:element name="parallelStageStartDiscussion" type="xs:dateTime"/>
+                <xs:element name="parallelStageEndDiscussion" type="xs:dateTime"/>
+                <xs:element name="compliteNumberDepAct" type="xs:string"/>
+                <xs:element name="compliteDateAct" type="xs:dateTime"/>
+                <xs:element name="compliteNumberRegAct" type="xs:string"/>
+                <xs:element name="nextStageDuration" type="xs:integer"/>
+                <xs:element name="startDiscussion" type="xs:dateTime"/>
+                <xs:element name="endDiscussion" type="xs:dateTime"/>
+                <xs:element name="discussionDays" type="xs:integer"/>
+              </xs:choice>
+            </xs:sequence>
+            <xs:attribute name="id" type="xs:integer" use="required"/>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+      <xs:attribute name="total" type="xs:integer" use="required"/>
+      <xs:attribute name="offset" type="xs:integer" use="optional"/>
+      <xs:attribute name="limit" type="xs:integer" use="optional"/>
+      <xs:attribute name="search" type="xs:string" use="optional"/>
+      <xs:attribute name="sort" type="xs:string" use="optional"/>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>
+

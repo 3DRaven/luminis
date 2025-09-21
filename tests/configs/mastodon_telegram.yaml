@@ -1,0 +1,71 @@
+llm:
+  model: {{ llm_model }}
+  provider: {{ llm_provider }}
+  base_url: {{ llm_base_url }}
+  api_key: {{ llm_api_key }}
+  log_prompt_preview_chars: 80
+crawler:
+  interval_seconds: 1
+  request_timeout_secs: 2
+  poll_delay_secs: 0
+  npalist:
+    enabled: {{ npalist_enabled }}
+    url: {{ base }}/api/npalist/?limit={limit}&offset={offset}&sort=desc
+    limit: 50
+    regex: '(\d{5,})'
+  rss:
+    enabled: {{ rss_enabled }}
+    url: {{ base }}/api/public/Rss
+    regex: '(\d{5,})'
+  file_id:
+    url: {{ base }}/api/public/PublicProjects/GetProjectStages/{project_id}
+    regex: '"fileId"\s*:\s*"([^\"]+)"'
+telegram:
+  api_base_url: {{ base }}
+  bot_token: TEST
+  target_chat_id: 1
+  enabled: {{ telegram_enabled }}
+  max_chars: 4096
+mastodon:
+  base_url: {{ base }}
+  access_token: TEST
+  enabled: {{ mastodon_enabled }}
+  login_cli: false
+  visibility: unlisted
+  language: ru
+  sensitive: false
+  max_chars: 495
+output:
+  console_enabled: {{ console_enabled }}
+  file_enabled: {{ file_enabled }}
+  file_path: {{ out }}
+  console_max_chars: 10000
+  file_max_chars: 20000
+  file_append: false
+run:
+  max_posts_per_run: 1
+  summarization_timeout_secs: 2
+  input_sample_percent: 1.0
+  model_max_chars: 300
+  cache_dir: {{ cache }}
+  post_template: |
+    {% raw %}{{ url }}
+    {{ summary }}{% endraw %}
+
+  # Используем тот же prompt_template, что и в основном config.yaml, чтобы тело запроса к Gemini точно совпадало
+  prompt_template: |
+    {% raw %}Создай краткий пост суммаризации для Telegram/Mastodon на русском.
+    Требования:
+    - Уложить в {{ limit }} символов ответа, это очень важно.
+    - Без воды, факты и суть.
+    - Оцени полезность проекта от 1 до 10
+    - Оцени репрессивность от 1 до 10
+    - Оцени коррупционную емкость проекта от 1 до 10
+    - Все оценки должны быть кратко пояснены в нескольких словах и представлены в виде оценка/максимум оценка
+    - Оценки должны быть написаны под общим заголовком "Рейтинг"
+    Данные с сайта:
+    Заголовок: {{ title }}
+    Текст: {{ body }}
+    Ссылка: {{ url }}{% endraw %}
+
+
