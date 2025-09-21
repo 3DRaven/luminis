@@ -1,11 +1,11 @@
 # luminis
 Mastodon/Telegram бот для сбора информации о новых законах
 
-# Оправдания
+## Оправдания
 
 Бот навайбкожен за несколько часов воскресенья, так что код просто работает там где проверен руками
 
-# Build and Run
+## Build and Run
 
 
 1. https://www.rust-lang.org/tools/install
