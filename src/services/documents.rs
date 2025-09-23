@@ -1,22 +1,27 @@
 //
 
 use crate::services::crawler::FileIdScanner;
+use crate::traits::markdown_fetcher::MarkdownFetcher;
 use markdownify::docx;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::io::{self, Write};
 use std::path::{Path, PathBuf};
+use std::collections::HashMap;
 use tracing::{debug, info};
+use bon::bon;
 
-/// Downloads a DOCX for a project and extracts plain text
-pub struct DocumentFetcher {
+/// Реализация MarkdownFetcher, получающая DOCX и извлекающая из него markdown
+pub struct DocxMarkdownFetcher {
     client: Client,
     file_id_url_template: Option<String>,
     files_base_url: Option<String>,
 }
 
-impl DocumentFetcher {
+#[bon]
+impl DocxMarkdownFetcher {
+    #[builder]
     pub fn new(file_id_url_template: Option<String>) -> Self {
         // Derive files base URL from file_id template host if provided
         let files_base_url = file_id_url_template.as_ref().and_then(|tpl| {
@@ -38,10 +43,8 @@ impl DocumentFetcher {
         }
     }
 
-    /// Finds fileId via GetProjectStages, downloads DOCX via GetFile, extracts text
-    /// Returns Ok(None) if fileId is absent in the stages response.
-    /// On success returns (raw_docx_bytes, extracted_text)
-    pub async fn fetch_docx(
+    /// Внутренняя реализация получения DOCX и извлечения markdown
+    async fn fetch_docx_internal(
         &self,
         project_id: &str,
     ) -> Result<Option<(Vec<u8>, String)>, Box<dyn std::error::Error + Send + Sync>> {
@@ -51,7 +54,7 @@ impl DocumentFetcher {
             Box::<dyn std::error::Error + Send + Sync>::from("crawler.file_id.url is required in config (no fallback stages endpoint)")
         )?;
         let url = tpl.replace("{project_id}", project_id);
-        let scanner = FileIdScanner::new();
+        let scanner = FileIdScanner::builder().client(Client::new()).build();
         let file_id = scanner.fetch_file_id(&url).await?;
         let file_id = match file_id {
             Some(v) => v,
@@ -70,6 +73,12 @@ impl DocumentFetcher {
         let bytes = self.client.get(&file_url).send().await?.bytes().await?;
         info!(size = bytes.len(), "docx: downloaded");
 
+        // Проверяем на пустой файл
+        if bytes.is_empty() {
+            info!(%project_id, "docx: file is empty, skipping");
+            return Ok(None);
+        }
+
         let text = Self::extract_markdown_from_docx(bytes.as_ref())?;
         debug!(len = text.len(), "docx: extracted markdown");
         Ok(Some((bytes.to_vec(), text)))
@@ -87,6 +96,9 @@ pub struct CacheMetadata {
     pub post_path: Option<String>,
     pub published_channels: Vec<String>,
     pub created_at: String,
+    // Новые поля для суммаризаций по каналам
+    pub channel_summaries: std::collections::HashMap<String, String>, // channel_name -> summary_text
+    pub channel_posts: std::collections::HashMap<String, String>,     // channel_name -> post_text
 }
 
 pub fn save_cache_artifacts(
@@ -136,6 +148,8 @@ pub fn save_cache_artifacts(
         },
         published_channels: published_channels.to_vec(),
         created_at: ts,
+        channel_summaries: HashMap::new(), // Будет заполняться отдельно
+        channel_posts: HashMap::new(),      // Будет заполняться отдельно
     };
     let json = serde_json::to_string_pretty(&meta).unwrap_or_else(|_| "{}".to_string());
     fs::write(&meta_path, json)?;
@@ -197,6 +211,8 @@ pub fn add_published_channels(
             post_path: None,
             published_channels: vec![],
             created_at: chrono::Utc::now().to_rfc3339(),
+            channel_summaries: HashMap::new(),
+            channel_posts: HashMap::new(),
         })
     } else {
         CacheMetadata {
@@ -207,6 +223,8 @@ pub fn add_published_channels(
             post_path: None,
             published_channels: vec![],
             created_at: chrono::Utc::now().to_rfc3339(),
+            channel_summaries: HashMap::new(),
+            channel_posts: HashMap::new(),
         }
     };
     for ch in new_channels {
@@ -225,15 +243,26 @@ fn project_dir(cache_dir: &str, project_id: &str) -> PathBuf {
 }
 
 // New helper that converts DOCX bytes to Markdown via markdownify
-impl DocumentFetcher {
+impl DocxMarkdownFetcher {
     fn extract_markdown_from_docx(
         docx_bytes: &[u8],
     ) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
+        info!(bytes_len = docx_bytes.len(), "docx: received bytes for markdownify");
         let mut tmp = tempfile::NamedTempFile::new()?;
         tmp.write_all(docx_bytes)?;
         let md =
             docx::docx_convert(tmp.path()).map_err(|e| format!("markdownify failed: {}", e))?;
         info!(len = md.len(), "docx: extracted markdown");
         Ok(md)
+    }
+}
+
+#[async_trait::async_trait]
+impl MarkdownFetcher for DocxMarkdownFetcher {
+    async fn fetch_markdown(
+        &self,
+        project_id: &str,
+    ) -> Result<Option<(Vec<u8>, String)>, Box<dyn std::error::Error + Send + Sync>> {
+        self.fetch_docx_internal(project_id).await
     }
 }

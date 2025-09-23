@@ -3,9 +3,11 @@ use reqwest::Client;
 use std::env;
 
 use serde::{Deserialize, Serialize};
-use crate::services::telegram_api::TelegramApi;
+use crate::traits::telegram_api::TelegramApi;
+use bon::Builder;
 
 /// A real implementation of the `TelegramApi` trait that sends HTTP requests to the Telegram Bot API.
+#[derive(Builder)]
 pub struct RealTelegramApi {
     pub client: Client,
     pub base_url: String,
@@ -13,23 +15,6 @@ pub struct RealTelegramApi {
 }
 
 impl RealTelegramApi {
-    /// Creates a new instance of `RealTelegramApi` with the provided base URL and bot token.
-    ///
-    /// # Arguments
-    ///
-    /// * `base_url` - The base URL of the Telegram Bot API (e.g., "https://api.telegram.org").
-    /// * `token` - The Telegram bot token used for authentication.
-    ///
-    /// # Returns
-    ///
-    /// A new `RealTelegramApi` instance with an internal HTTP client.
-    pub fn new(base_url: String, token: String) -> Self {
-        Self {
-            client: Client::new(),
-            base_url,
-            token,
-        }
-    }
 
     /// Creates a new `RealTelegramApi` instance using environment variables.
     ///

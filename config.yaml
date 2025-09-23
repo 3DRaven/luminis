@@ -1,3 +1,8 @@
+# Конфигурация Luminis - системы мониторинга и публикации новостей законодательства
+# Архитектура: NpaListCrawler и Worker работают как независимые подсистемы,
+# общаясь через канал. RSS используется как fallback при сбоях NPA краулера.
+# Реализовано многоэтапное кэширование для оптимизации производительности.
+
 llm:
   # Идентификатор модели. Если не указан, будет использована модель по умолчанию провайдера
   # (см. Provider::default_chat_model()).
@@ -7,27 +12,31 @@ llm:
   # TogetherAI, OpenRouter, Replicate, BaiduWenxin, TencentHunyuan, IflytekSpark, Moonshot,
   # ZhipuAI, MiniMax, OpenAI, Qwen, Gemini, Mistral, Cohere, Perplexity, AI21
   provider: Gemini
-  base_url: # http://127.0.0.1:8080/v1beta кастомный URL, если нужен, может быть использова с wiremock для записи всего общения с AI API провайдером
+  base_url: null # http://127.0.0.1:8080/v1beta # кастомный URL, если нужен, может быть использова с wiremock для записи всего общения с AI API провайдером
   proxy: null # http://proxy:8080 при необходимости
   # api_key: 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
-  api_key:  # можно оставить пустым и задать через env
+  api_key: # можно оставить пустым и задать через env
   request_timeout_secs: 60
   # Сколько символов промпта и ответа показывать в логах
   log_prompt_preview_chars: 200
 
 crawler:
   # Общие параметры
-  interval_seconds: 10 # Интервал между циклами, сек
-  request_timeout_secs: 30 # Таймаут HTTP-запросов, сек
-  poll_delay_secs: 5 # Задержка между вызовами API LLM суммаризатора
+  interval_seconds: 10 # Интервал между циклами краулера, сек
+  request_timeout_secs: 30 # Таймаут HTTP-запросов к API, сек
+  poll_delay_secs: 5 # Задержка между запросами к API (для избежания rate limiting), сек
+  max_retry_attempts: 0 # Максимальное количество попыток при сбое обоих краулеров (0 = бесконечно, >0 = ограниченное количество)
   # Источники NPA list (API). Поддерживает плейсхолдеры {limit} и {offset}
+  # NPA краулер работает как основная подсистема, RSS используется как fallback при сбоях
   npalist:
     enabled: true
     url: https://regulation.gov.ru/api/npalist/?limit={limit}&offset={offset}&sort=desc
     limit: 50
     # Необязательный regex для проверки/извлечения project_id из URL проекта
     regex: "https://regulation\\.gov\\.ru/projects/(\\d{5,})"
-  # Источники RSS (XML)
+    # Интервал для периодического запуска NPA краулера (секунды)
+    interval_seconds: 300
+  # Источники RSS (XML) - используется как fallback при сбоях NPA краулера
   rss:
     enabled: true
     url: https://regulation.gov.ru/api/public/Rss
@@ -86,7 +95,7 @@ output:
 
 run:
   # Максимум постов за один запуск (0 или null = без лимита)
-  # max_posts_per_run: 2
+  #max_posts_per_run: 2
   # Таймаут суммаризации в секундах
   summarization_timeout_secs: 120
   # Доля исходного текста для промпта (0.05 = 5%)
@@ -94,6 +103,8 @@ run:
   # Предпочтительный мягкий лимит для модели суммаризатора
   model_max_chars: 300
   # Куда сохранять кэш (docx, markdown, summary, metadata.json)
+  # Кэш работает многоэтапно: проверяется наличие данных на каждом этапе обработки
+  # для избежания повторных операций (скачивание, суммаризация, публикация)
   cache_dir: ./cache
   # Tera-шаблон промпта для Summarizer
   # Доступные метаданные (все поля могут быть пустыми):

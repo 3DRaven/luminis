@@ -1,6 +1,11 @@
 GET https://regulation.gov.ru/api/npalist/?limit=50&offset=0&sort=desc
 
+Прмер пустого ответа
+```xml
+<projects offset="1000000" limit="50" sort="desc" total="119978"/>
+```
 
+Пример полного ответа
 ```xml
 <projects offset="0" limit="50" sort="desc" total="119927">
   <project id="160532">

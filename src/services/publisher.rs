@@ -2,7 +2,7 @@ use async_trait::async_trait;
 use std::error::Error;
 use std::sync::Arc;
 
-use crate::services::telegram_api::TelegramApi;
+use crate::traits::telegram_api::TelegramApi;
 use crate::services::mastodon::MastodonPublisher;
 use mastodon_async::Language;
 use tracing::{info, error};
@@ -20,11 +20,7 @@ fn trim_with_ellipsis(text: &str, max_chars: usize) -> String {
     s
 }
 
-#[async_trait]
-pub trait Publisher: Send + Sync {
-    fn name(&self) -> &str;
-    async fn publish(&self, title: &str, url: &str, text: &str) -> Result<(), Box<dyn Error + Send + Sync>>;
-}
+pub use crate::traits::publisher::Publisher;
 
 pub struct ConsolePublisher {
     pub max_chars: Option<usize>,
@@ -58,7 +54,7 @@ pub struct FilePublisher {
 #[async_trait]
 impl Publisher for FilePublisher {
     fn name(&self) -> &str { "file" }
-    async fn publish(&self, title: &str, url: &str, text: &str) -> Result<(), Box<dyn Error + Send + Sync>> {
+    async fn publish(&self, _title: &str,_urll: &str, text: &str) -> Result<(), Box<dyn Error + Send + Sync>> {
         let final_text = if let Some(maxc) = self.max_chars { trim_with_ellipsis(text, maxc) } else { text.to_string() };
         let p = std::path::Path::new(&self.path);
         if let Some(parent) = p.parent() { let _ = std::fs::create_dir_all(parent); }

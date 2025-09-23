@@ -1,0 +1,7 @@
+[
+  {"title":"Старт","description":"Паспорт проекта","stage":"Undefined","isCurrent":false,"isEmpty":false,"parallelStageDiscussion":null},
+  {"$type":"TextStageModel","discussionModel":{"title":"Ваши предложения","discussionType":"Text","discussionPercentage":0,"discussionDayLeft":11},"file":{"date":"2025-09-16T03:06:53.082","version":null,"fileId":"b3d99703-8b7a-4f72-bc39-c144792e97fa","id":"Текст проекта нормативного правового акта","description":"Проект приказа.docx"},"modifiedFile":null,"title":"Текст проекта","description":"...","stage":"Text","isCurrent":true,"isEmpty":false,"parallelStageDiscussion":{"title":"Антикор. экспертиза","discussionType":"ParallelStage","discussionPercentage":0,"discussionDayLeft":3}},
+  {"$type":"CompleteStageModel","file":null,"title":"Принятый документ","description":"...","stage":"Complete","isCurrent":false,"isEmpty":true,"parallelStageDiscussion":null}
+]
+
+

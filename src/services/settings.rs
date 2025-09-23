@@ -56,6 +56,7 @@ pub struct CrawlerConfig {
     pub interval_seconds: u64,
     pub request_timeout_secs: Option<u64>,
     pub poll_delay_secs: Option<u64>,
+    pub max_retry_attempts: Option<u64>, // 0 = бесконечно, >0 = ограниченное количество попыток
     pub npalist: Option<NpaListConfig>,
     pub rss: Option<RssConfig>,
     pub file_id: Option<FileIdConfig>,
@@ -76,6 +77,7 @@ pub struct NpaListConfig {
     pub url: String,
     pub limit: Option<u32>,
     pub regex: Option<String>,
+    pub interval_seconds: Option<u64>, // интервал для периодического запуска NPA краулера
 }
 
 

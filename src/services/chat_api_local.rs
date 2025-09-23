@@ -1,9 +1,11 @@
-use crate::services::{chat_api::ChatApi, settings::LlmConfig};
+use crate::services::settings::LlmConfig;
+use crate::traits::chat_api::ChatApi;
 use async_trait::async_trait;
 // tracing is available if needed
 
 use ai_lib::ConnectionOptions;
 use ai_lib::prelude::*;
+use bon::Builder;
 use std::str::FromStr;
 use strum_macros::EnumString;
 use tokio::sync::Mutex;
@@ -70,6 +72,7 @@ struct Engine {
     cloud: AiClient,
 }
 
+#[derive(Builder)]
 pub struct LocalChatApi {
     pub model: String,
     pub model_path: Option<String>,
@@ -78,15 +81,6 @@ pub struct LocalChatApi {
 }
 
 impl LocalChatApi {
-    pub fn new(model: Option<String>) -> Self {
-        Self {
-            model: model.unwrap_or_else(|| "".to_string()),
-            model_path: None,
-            tokenizer_path: None,
-            engine: Mutex::new(None),
-        }
-    }
-
     pub fn from_config(llm: &LlmConfig) -> Self {
         llm_defaults::init(llm);
         Self {

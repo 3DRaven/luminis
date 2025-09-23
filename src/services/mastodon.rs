@@ -9,7 +9,9 @@ use mastodon_async::data::Data;
 use mastodon_async::helpers::cli as m_cli;
 // do not touch manifest for secrets
 use tracing::{error, info};
+use bon::Builder;
 
+#[derive(Builder)]
 pub struct MastodonPublisher {
     client: Client,
     base_url: String,
@@ -17,13 +19,6 @@ pub struct MastodonPublisher {
 }
 
 impl MastodonPublisher {
-    pub fn new(base_url: String, access_token: String) -> Self {
-        Self {
-            client: Client::new(),
-            base_url,
-            access_token,
-        }
-    }
 
     pub async fn post_status(
         &self,
