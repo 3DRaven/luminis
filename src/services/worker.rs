@@ -16,6 +16,19 @@ use crate::services::summarizer::Summarizer;
 use crate::services::settings::AppConfig;
 use crate::services::channels::ChannelManager;
 
+/// Trim text to at most `max_chars` characters, appending an ellipsis if trimmed.
+/// Uses char-aware slicing to avoid breaking UTF-8 sequences.
+fn trim_with_ellipsis(text: &str, max_chars: usize) -> String {
+    if max_chars == 0 { return String::new(); }
+    let count = text.chars().count();
+    if count <= max_chars { return text.to_string(); }
+    if max_chars == 1 { return "…".to_string(); }
+    let take_chars = max_chars.saturating_sub(1);
+    let mut s: String = text.chars().take(take_chars).collect();
+    s.push('…');
+    s
+}
+
 /// Обрабатывает элементы краулинга: суммаризация, публикация
 pub struct Worker {
     config: AppConfig,
@@ -266,8 +279,8 @@ impl Worker {
             tokio::time::sleep(std::time::Duration::from_secs(llm_delay)).await; 
         }
         
-        // Используем лимит канала, если указан, иначе fallback на model_max_chars
-        let model_limit = channel_limit.or_else(|| self.config.run.as_ref().and_then(|r| r.model_max_chars));
+        // Используем лимит канала, если указан, иначе fallback на post_max_chars
+        let model_limit = channel_limit.or_else(|| self.config.run.as_ref().and_then(|r| r.post_max_chars));
         let summarizer_arc = self.summarizer.clone();
         
         match tokio::time::timeout(
@@ -332,7 +345,14 @@ impl Worker {
         let rendered = tera.render("post_tpl", &ctx)
             .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, format!("post_template render failed: {}", e)))?;
         
-        Ok(rendered)
+        // Применяем жесткий лимит размера поста, если задан
+        let final_post = if let Some(max_chars) = self.config.run.as_ref().and_then(|r| r.post_max_chars) {
+            trim_with_ellipsis(&rendered, max_chars)
+        } else {
+            rendered
+        };
+        
+        Ok(final_post)
     }
 
     /// Обрабатывает суммаризацию для конкретного канала

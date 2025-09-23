@@ -116,7 +116,7 @@ pub struct RunConfig {
     pub max_posts_per_run: Option<usize>,
     pub summarization_timeout_secs: Option<u64>,
     pub input_sample_percent: Option<f32>, // 0.0..=1.0, how much of docx text to feed LLM
-    pub model_max_chars: Option<usize>,    // soft limit for summarizer prompt
+    pub post_max_chars: Option<usize>,      // hard limit for final post (will be trimmed)
     pub hard_max_chars: Option<usize>,     // deprecated; not used
     pub prompt_template: Option<String>,   // Tera template for summarizer prompt
     pub cache_dir: Option<String>,         // directory for caching artifacts

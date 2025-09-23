@@ -1,0 +1,35 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "text": "Изменения в порядок реализации конфискованного имущества (ПП РФ №1041). Аукционы переводят в электронный вид. Много технических правок по процедуре.\n**Рейтинг:**\nПолезность: 3/10 (косметика)\nРепрессивность: 1/10 (не влияет)\nКоррупционная емкость: 5/10 (возможны манипуляции на торгах)\n"
+          }
+        ],
+        "role": "model"
+      },
+      "finishReason": "STOP",
+      "avgLogprobs": -0.36539256816007654
+    }
+  ],
+  "usageMetadata": {
+    "promptTokenCount": 18582,
+    "candidatesTokenCount": 98,
+    "totalTokenCount": 18680,
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 18582
+      }
+    ],
+    "candidatesTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 98
+      }
+    ]
+  },
+  "modelVersion": "gemini-2.0-flash",
+  "responseId": "BhLQaN2IJLPHvdIPkp-h-As"
+}

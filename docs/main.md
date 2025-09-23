@@ -6,11 +6,12 @@
 sequenceDiagram
     participant App as Application
     participant Lib as lib.rs
-    participant Subsys as Subsystem
-    participant NPA as NpaListCrawler
+    participant NPA as NpaListCrawlerSubsystem
     participant RSS as RssCrawler
+    participant WorkerSub as WorkerSubsystem
     participant Worker as Worker
-    participant MarkdownFetcher as MarkdownFetcher
+    participant ChannelMgr as ChannelManager
+    participant MarkdownFetcher as DocxMarkdownFetcher
     participant Summarizer as Summarizer
     participant CacheManager as CacheManager
     participant Publishers as Publishers
@@ -23,97 +24,106 @@ sequenceDiagram
     App->>Lib: run_with_config_path()
     Lib->>Lib: load_config()
     Lib->>Lib: init_logging()
-    Lib->>Lib: run_worker()
-
-    Note over Lib: Инициализация сервисов
-    Lib->>Lib: init_chat_api()
+    Lib->>Lib: init_chat_api(LocalChatApi)
     Lib->>Lib: init_summarizer()
-    Lib->>Lib: init_telegram_api()
-    Lib->>Lib: init_mastodon()
-    Lib->>Subsys: new()
-    Lib->>Worker: new()
+    Lib->>Lib: init_telegram_api(Optional)
+    Lib->>Lib: init_cache_manager()
+    Lib->>Lib: ensure(post_template)
+    Lib->>NPA: start_subsystem()
+    Lib->>WorkerSub: start_subsystem()
+    Lib->>Lib: catch_signals() & handle_shutdown_requests()
 
-    Note over Subsys: Запуск асинхронных задач
-    Lib->>Subsys: start_npa_crawler()
-    Subsys->>Subsys: spawn(async_task)
-    
-    Note over Lib: Запуск Worker с поддержкой graceful shutdown
-    Lib->>Worker: start_processing_with_shutdown()
-    Worker->>Worker: spawn(async_task_with_shutdown_handle)
-    
-    Note over NPA: NPA краулер работает независимо
-    loop Каждый npa_interval_secs
-        NPA->>NPA: fetch()
-        NPA->>NPA: load_manifest()
-        NPA->>NPA: fetch_latest(offset=0)
-        
+    Note over NPA: Краулер работает как подсистема по интервалу
+    loop Каждые npa_interval_secs
+        NPA->>NPA: try_fetch_data_with_retry()
+        NPA->>NPA: NpaListCrawler.fetch()
         alt Новые элементы найдены
-            NPA->>Worker: send_items_to_channel()
-        else Новых элементов нет
-            NPA->>NPA: fetch_history(last_offset)
-            NPA->>NPA: update_manifest()
-            NPA->>Worker: send_items_to_channel()
+            NPA->>WorkerSub: send(items)
+        else Нет новых элементов
+            NPA->>NPA: log("no items")
         else Ошибка NPA
-            NPA->>RSS: fetch() (fallback)
-            RSS->>Worker: send_items_to_channel()
+            NPA->>RSS: RssCrawler.fetch() (fallback)
+            alt RSS вернул элементы
+                RSS->>WorkerSub: send(items)
+            else Оба упали после ретраев
+                NPA->>NPA: request_shutdown()
+            end
         end
     end
 
-    Note over Worker: Worker работает независимо
+    Note over WorkerSub: Worker ждёт элементы и обрабатывает батчами
+    WorkerSub->>Worker: new()
     loop Каждое сообщение из канала
-        Worker->>Worker: receive_items_from_channel()
-        
+        WorkerSub->>Worker: process_items(items)
+
         loop Для каждого элемента
-            Worker->>Worker: check_cache_metadata()
-            
-            alt Данные уже скачаны
+            Worker->>Worker: require(project_id)
+            Worker->>CacheManager: has_data()
+            alt Данные есть
                 Worker->>CacheManager: load_cached_data()
-                CacheManager->>Worker: cached_data
-            else Данные не скачаны
-                Worker->>MarkdownFetcher: fetch_markdown()
-                MarkdownFetcher->>MarkdownFetcher: get_file_id()
-                MarkdownFetcher->>MarkdownFetcher: download_file()
-                MarkdownFetcher->>Worker: (bytes, text)
-                Worker->>CacheManager: save_cache_artifacts()
+                CacheManager->>Worker: markdown
+            else Нет данных
+                Worker->>MarkdownFetcher: fetch_markdown(project_id)
+                MarkdownFetcher->>Worker: (docx_bytes, markdown)
+                Worker->>CacheManager: save_artifacts(docx, markdown)
             end
-            
-            Worker->>Worker: check_cache_summary()
-            
-            alt Суммаризация уже готова
-                Worker->>CacheManager: load_cached_summary()
-                CacheManager->>Worker: cached_summary
-            else Суммаризация нужна
-                Worker->>Summarizer: summarize_with_limit()
-                Summarizer->>Summarizer: call_chat_api()
+
+            Worker->>CacheManager: has_summary()
+            alt Summary есть
+                Worker->>CacheManager: load_summary()
+            else Нет summary
+                Worker->>Worker: throttle_by_poll_delay()
+                Worker->>Summarizer: summarize_with_limit(title, markdown, url, limit?)
                 Summarizer->>Worker: summary_text
-                Worker->>CacheManager: save_cache_artifacts()
+                Worker->>CacheManager: save_artifacts(summary)
             end
-            
-            Worker->>Worker: check_published_channels()
-            Worker->>CacheManager: load_cache_metadata()
-            CacheManager->>Worker: published_channels
-            
-            alt Нужна публикация
-                Worker->>Worker: build_post()
-                Worker->>Publishers: publish()
-                Publishers->>Worker: published_names
-                Worker->>CacheManager: add_published_channels()
-            else Все каналы уже опубликованы
-                Worker->>Worker: skip_publishing()
+
+            Worker->>ChannelMgr: get_enabled_channels()
+            loop Для каждого канала
+                Worker->>CacheManager: is_published_in_channel?
+                alt Уже опубликовано
+                    Worker->>Worker: skip
+                else Нужна публикация
+                    Worker->>CacheManager: has_channel_summary()
+                    alt Есть
+                        Worker->>CacheManager: load_channel_summary()
+                    else Нет
+                        Worker->>Summarizer: summarize_with_limit(... channel_limit)
+                        Summarizer->>Worker: channel_summary
+                        Worker->>CacheManager: save_channel_summary()
+                    end
+
+                    Worker->>CacheManager: has_channel_post()
+                    alt Есть
+                        Worker->>CacheManager: load_channel_post()
+                    else Нет
+                        Worker->>Worker: build_post(tera template)
+                        Worker->>CacheManager: save_channel_post()
+                    end
+
+                    Worker->>Publishers: publish(channel, post)
+                    Publishers->>Worker: ok?
+                    alt success
+                        Worker->>CacheManager: add_published_channels()
+                    else failure
+                        Worker->>Worker: continue
+                    end
+                end
             end
         end
+
+        alt Достигнут лимит max_posts_per_run
+            WorkerSub->>WorkerSub: break loop
+            WorkerSub->>WorkerSub: request_shutdown()
+        end
     end
-    
-    Note over App: Graceful Shutdown (Ctrl+C)
-    App->>App: catch_signals()
+
+    Note over App: Graceful Shutdown (Ctrl+C или запрос из подсистем)
     App->>NPA: on_shutdown_requested()
-    App->>Worker: on_shutdown_requested()
-    
-    alt Shutdown запрошен
-        NPA->>NPA: graceful_shutdown()
-        Worker->>Worker: graceful_shutdown()
-        App->>App: shutdown_complete()
-    end
+    App->>WorkerSub: on_shutdown_requested()
+    NPA->>NPA: cancel_on_shutdown()
+    WorkerSub->>WorkerSub: cancel_on_shutdown()
+    App->>App: shutdown_complete()
 ```
 
 ## Компоненты системы
