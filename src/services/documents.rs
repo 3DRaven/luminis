@@ -70,7 +70,9 @@ impl DocxMarkdownFetcher {
             .unwrap_or("https://regulation.gov.ru");
         let file_url = format!("{}/api/public/Files/GetFile?fileId={}", base, file_id);
         info!(url = %file_url, "docx: GET file url");
-        let bytes = self.client.get(&file_url).send().await?.bytes().await?;
+        let response = self.client.get(&file_url).send().await?;
+        info!(status = %response.status(), "docx: response status");
+        let bytes = response.bytes().await?;
         info!(size = bytes.len(), "docx: downloaded");
 
         // Проверяем на пустой файл

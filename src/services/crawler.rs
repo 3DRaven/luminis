@@ -99,6 +99,7 @@ impl Crawler for RssCrawler {
             let link = text_of("link");
             let title = text_of("title");
             let desc = text_of("description");
+            let author = text_of("author");
             // Try to extract project_id in order: guid -> link -> description, using provided regex.
             let mut pid: Option<String> = None;
             if let Some(g) = guid.as_deref() {
@@ -155,6 +156,9 @@ impl Crawler for RssCrawler {
                 }
                 if let Some(v) = publish_date {
                     metadata.push(MetadataItem::PublishDate(v));
+                }
+                if let Some(v) = author {
+                    metadata.push(MetadataItem::Author(v));
                 }
                 items.push(CrawlItem {
                     title: title_val,
@@ -577,13 +581,19 @@ impl FileIdScanner {
         url: &str,
     ) -> Result<Option<String>, Box<dyn std::error::Error + Send + Sync>> {
         info!(%url, "fileid: fetch");
-        let body = self.client.get(url).send().await?.text().await?;
+        let response = self.client.get(url).send().await?;
+        info!(status = %response.status(), "fileid: response status");
+        let body = response.text().await?;
+        info!(body_len = body.len(), "fileid: response body length");
         let re = Regex::new(r#"fileId"\s*:\s*"([^"]+)"#).unwrap();
         for caps in re.captures_iter(&body) {
             if let Some(m) = caps.get(1) {
-                return Ok(Some(m.as_str().to_string()));
+                let file_id = m.as_str().to_string();
+                info!(%file_id, "fileid: found fileId");
+                return Ok(Some(file_id));
             }
         }
+        info!("fileid: no fileId found in response");
         Ok(None)
     }
 }
@@ -605,6 +615,7 @@ pub enum MetadataItem {
     RegulatoryImpact(String),
     RegulatoryImpactId(String),
     Responsible(String),
+    Author(String),
     Department(String),
     DepartmentId(String),
     Status(String),

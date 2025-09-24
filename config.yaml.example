@@ -113,7 +113,7 @@ run:
   # Доступные метаданные (все поля могут быть пустыми):
   # {{ project_id }}, {{ date }}, {{ publish_date }}, {{ status }}, {{ status_id }},
   # {{ stage }}, {{ stage_id }}, {{ regulatory_impact }}, {{ regulatory_impact_id }},
-  # {{ kind }}, {{ kind_id }}, {{ department }}, {{ department_id }}, {{ responsible }},
+  # {{ kind }}, {{ kind_id }}, {{ department }}, {{ department_id }}, {{ responsible }}, {{ author }},
   # {{ procedure }}, {{ procedure_id }}, {{ procedure_result }}, {{ procedure_result_id }},
   # {{ next_stage_duration }}, {{ start_discussion }}, {{ end_discussion }},
   # {{ parallel_stage_start_discussion }}, {{ parallel_stage_end_discussion }},
@@ -155,6 +155,7 @@ run:
   #   {{ department }}
   #   {{ department_id }}
   #   {{ responsible }}
+  #   {{ author }}
   #   {{ procedure }}
   #   {{ procedure_id }}
   #   {{ procedure_result }}
@@ -182,5 +183,5 @@ run:
     {%- set meta_str = "" -%}
     {%- set sep = "" -%}
     {%- if department -%}{% set meta_str = meta_str ~ sep ~ "Деп:" ~ department %}{% set sep = "; " %}{% endif %}
-    {%- if responsible -%}{% set meta_str = meta_str ~ sep ~ "Отв:" ~ responsible %}{% set sep = "; " %}{% endif %}
+    {%- if responsible -%}{% set meta_str = meta_str ~ sep ~ "Отв:" ~ responsible %}{% set sep = "; " %}{% elif author -%}{% set meta_str = meta_str ~ sep ~ "Отв:" ~ author %}{% set sep = "; " %}{% endif %}
     Метаданные: [{{ meta_str }}]

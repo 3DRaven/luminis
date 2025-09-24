@@ -53,8 +53,9 @@ bon = "3.7.2"
 tokio-graceful-shutdown = { version = "0.17.1", features = ["tracing"] }
 backon = "1.5.2"
 anyhow = "1.0.95"
+clap = { version = "4.5.48", features = ["derive"] }
 
 [dev-dependencies]
 rstest = "0.26.1"
-mockito = "1.7.0"
+wiremock = "0.6.5"
 serial_test = "3.2.0"

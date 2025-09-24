@@ -1,7 +1,8 @@
 use std::fs;
 use std::path::PathBuf;
 use tera::{Context, Tera};
-use mockito::{Server, Matcher, Mock};
+use wiremock::{MockServer, Mock, ResponseTemplate};
+use wiremock::matchers::{method, path, path_regex, query_param};
 use luminis::services::documents::save_cache_artifacts;
 
 pub fn read_mocks() -> (String, String) {
@@ -16,112 +17,95 @@ pub fn load_test_config_template() -> String {
     fs::read_to_string(p).unwrap()
 }
 
-pub async fn mount_rss(server: &mut Server, rss_xml: &str) -> Mock {
-    server.mock("GET", "/api/public/Rss")
-        .with_status(200)
-        .with_body(rss_xml)
-        .expect_at_least(1)
-        .create_async().await
+pub async fn mount_rss(server: &MockServer, rss_xml: &str) {
+    let mock = Mock::given(method("GET"))
+        .and(path("/api/public/Rss"))
+        .respond_with(ResponseTemplate::new(200).set_body_string(rss_xml));
+    server.register(mock).await;
 }
 
-pub async fn mount_rss_with_error(server: &mut Server) -> Mock {
-    server.mock("GET", "/api/public/Rss")
-        .with_status(500)
-        .with_body("Internal Server Error")
-        .expect_at_least(1)
-        .create_async().await
+pub async fn mount_rss_with_error(server: &MockServer) {
+    let mock = Mock::given(method("GET"))
+        .and(path("/api/public/Rss"))
+        .respond_with(ResponseTemplate::new(500).set_body_string("Internal Server Error"));
+    server.register(mock).await;
 }
 
-pub async fn mount_npalist(server: &mut Server) -> Mock {
+pub async fn mount_npalist(server: &MockServer) {
     let npalist_xml = fs::read_to_string(
         PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/resources/mocks/npalist.xml"),
     )
     .unwrap();
-    server.mock("GET", Matcher::Regex(r"/api/npalist/.*".to_string()))
-        .with_status(200)
-        .with_body(npalist_xml)
-        .expect_at_least(1)
-        .create_async().await
+    let mock = Mock::given(method("GET"))
+        .and(path_regex(r"/api/npalist/.*"))
+        .respond_with(ResponseTemplate::new(200).set_body_string(npalist_xml));
+    server.register(mock).await;
 }
 
-pub async fn mount_npalist_with_error(server: &mut Server) -> Mock {
-    server.mock("GET", "/api/npalist/?limit=50&offset=0&sort=desc")
-        .with_status(500)
-        .with_body("Internal Server Error")
-        .expect_at_least(1)
-        .create_async().await
+pub async fn mount_npalist_with_error(server: &MockServer) {
+    let mock = Mock::given(method("GET"))
+        .and(path("/api/npalist/"))
+        .and(query_param("limit", "50"))
+        .and(query_param("offset", "0"))
+        .and(query_param("sort", "desc"))
+        .respond_with(ResponseTemplate::new(500).set_body_string("Internal Server Error"));
+    server.register(mock).await;
 }
 
-pub async fn mount_stages(server: &mut Server, stages_json: &str) -> Mock {
-    server.mock("GET", Matcher::Regex(r"/api/public/PublicProjects/GetProjectStages/\d+".to_string()))
-        .with_status(200)
-        .with_body(stages_json)
-        .expect_at_least(1)
-        .create_async().await
+pub async fn mount_stages(server: &MockServer, stages_json: &str) {
+    let mock = Mock::given(method("GET"))
+        .and(path_regex(r"/api/public/PublicProjects/GetProjectStages/\d+"))
+        .respond_with(ResponseTemplate::new(200).set_body_string(stages_json));
+    server.register(mock).await;
 }
 
-pub async fn mount_docx(server: &mut Server) -> Mock {
+pub async fn mount_docx(server: &MockServer) {
     let docx_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/resources/mocks/source.docx");
+    let docx_content = fs::read(&docx_path).unwrap();
     
-    // // Логирование содержимого DOCX через markdownify
-    // match docx::docx_convert(&docx_path) {
-    //     Ok(markdown) => {
-    //         let preview = if markdown.chars().count() > 50 {
-    //             format!("{}...", markdown.chars().take(50).collect::<String>())
-    //         } else {
-    //             markdown.clone()
-    //         };
-    //         println!("DOCX mock content: {}", preview);
-    //     },
-    //     Err(e) => {
-    //         println!("DOCX mock markdownify error: {}", e);
-    //     }
-    // }
-    
-    server.mock("GET", Matcher::Regex(r"/api/public/Files/GetFile\?.*".to_string()))
-        .with_status(200)
-        .with_header(
-            "content-type",
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        )
-        .with_body_from_file(&docx_path)
-        .expect_at_least(1)
-        .create_async().await
+    let mock = Mock::given(method("GET"))
+        .and(path_regex(r"/api/public/Files/GetFile"))
+        .respond_with(
+            ResponseTemplate::new(200)
+                .insert_header("content-type", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+                .set_body_bytes(docx_content)
+        );
+    server.register(mock).await;
 }
 
-pub async fn mount_gemini_generate(server: &mut Server) -> Mock {
+pub async fn mount_gemini_generate(server: &MockServer) {
     let response_body = fs::read_to_string(
         PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(
             "tests/resources/mocks/body-v1beta-models-gemini-2.0-flash_generateContent-8OOhY.json",
         ),
     )
     .unwrap();
-    server.mock("POST", "/v1beta/models/gemini-2.0-flash:generateContent")
-        .with_status(200)
-        .with_header("content-type", "application/json; charset=UTF-8")
-        .with_body(response_body)
-        .expect_at_least(1)
-        .create_async().await
+    let mock = Mock::given(method("POST"))
+        .and(path("/v1beta/models/gemini-2.0-flash:generateContent"))
+        .respond_with(
+            ResponseTemplate::new(200)
+                .insert_header("content-type", "application/json; charset=UTF-8")
+                .set_body_string(response_body)
+        );
+    server.register(mock).await;
 }
 
-pub async fn mount_mastodon(server: &mut Server) -> Mock {
+pub async fn mount_mastodon(server: &MockServer) {
     let mstd_json = fs::read_to_string(
         PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/resources/mocks/mastodon_status.json"),
     )
     .unwrap();
-    server.mock("POST", "/api/v1/statuses")
-        .with_status(200)
-        .with_body(mstd_json)
-        .expect_at_least(1)
-        .create_async().await
+    let mock = Mock::given(method("POST"))
+        .and(path("/api/v1/statuses"))
+        .respond_with(ResponseTemplate::new(200).set_body_string(mstd_json));
+    server.register(mock).await;
 }
 
-pub async fn mount_telegram(server: &mut Server) -> Mock {
-    server.mock("POST", Matcher::Regex(r"/botTEST/sendMessage".to_string()))
-        .with_status(200)
-        .with_body("{\"ok\":true}")
-        .expect_at_least(1)
-        .create_async().await
+pub async fn mount_telegram(server: &MockServer) {
+    let mock = Mock::given(method("POST"))
+        .and(path_regex(r"/botTEST/sendMessage"))
+        .respond_with(ResponseTemplate::new(200).set_body_string("{\"ok\":true}"));
+    server.register(mock).await;
 }
 
 pub fn render_config(
@@ -212,18 +196,20 @@ pub fn prepopulate_cache(cache_dir: &str, project_id: &str, summary_text: &str) 
 }
 
 /// Создает мок для Gemini с указанным лимитом символов
-pub async fn mount_gemini_generate_with_limit(server: &mut Server, limit: usize) -> Mock {
+pub async fn mount_gemini_generate_with_limit(server: &MockServer, limit: usize) {
     let response_body = format!(
         r#"{{"candidates":[{{"content":{{"parts":[{{"text":"Краткая суммаризация для лимита {} символов. Поправки в закон об ОМС: Губернаторы смогут передавать полномочия страховых компаний тер. фондам ОМС (с ограничениями), уточнен статус иностр. граждан. Льготы работникам фед. фонда ОМС. Финансирование мед.помощи в новых регионах.\\n\\nРейтинг:\\nПолезность: 5/10 (частично улучшает ОМС)\\nРепрессивность: 2/10 (незначительно)\\nКоррупц. емкость: 6/10 (регион. перераспределение)"}}]}}}}]}}"#,
         limit
     );
     
-    server.mock("POST", "/v1beta/models/gemini-2.0-flash:generateContent")
-        .with_status(200)
-        .with_header("content-type", "application/json")
-        .with_body(response_body)
-        .expect_at_least(1)
-        .create_async().await
+    let mock = Mock::given(method("POST"))
+        .and(path("/v1beta/models/gemini-2.0-flash:generateContent"))
+        .respond_with(
+            ResponseTemplate::new(200)
+                .insert_header("content-type", "application/json")
+                .set_body_string(response_body)
+        );
+    server.register(mock).await;
 }
 
 /// Предзаполняет кэш для конкретного канала

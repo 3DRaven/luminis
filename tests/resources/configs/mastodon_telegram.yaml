@@ -51,7 +51,13 @@ run:
   cache_dir: {{ cache }}
   post_template: |
     {% raw %}{{ url }}
-    {{ summary }}{% endraw %}
+    {{ summary }}
+
+    {%- set meta_str = "" -%}
+    {%- set sep = "" -%}
+    {%- if department -%}{% set meta_str = meta_str ~ sep ~ "Деп:" ~ department %}{% set sep = "; " %}{% endif %}
+    {%- if responsible -%}{% set meta_str = meta_str ~ sep ~ "Отв:" ~ responsible %}{% set sep = "; " %}{% elif author -%}{% set meta_str = meta_str ~ sep ~ "Отв:" ~ author %}{% set sep = "; " %}{% endif %}
+    Метаданные: [{{ meta_str }}]{% endraw %}
 
   # Используем тот же prompt_template, что и в основном config.yaml, чтобы тело запроса к Gemini точно совпадало
   prompt_template: |

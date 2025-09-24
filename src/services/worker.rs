@@ -339,7 +339,44 @@ impl Worker {
         
         // Метаданные
         for m in &item.metadata {
-            ctx.insert(&m.to_string(), &m.to_string());
+            let key = m.to_string();
+            let value = match m {
+                crate::services::crawler::MetadataItem::Date(v) => v,
+                crate::services::crawler::MetadataItem::PublishDate(v) => v,
+                crate::services::crawler::MetadataItem::RegulatoryImpact(v) => v,
+                crate::services::crawler::MetadataItem::RegulatoryImpactId(v) => v,
+                crate::services::crawler::MetadataItem::Responsible(v) => v,
+                crate::services::crawler::MetadataItem::Author(v) => v,
+                crate::services::crawler::MetadataItem::Department(v) => v,
+                crate::services::crawler::MetadataItem::DepartmentId(v) => v,
+                crate::services::crawler::MetadataItem::Status(v) => v,
+                crate::services::crawler::MetadataItem::StatusId(v) => v,
+                crate::services::crawler::MetadataItem::Stage(v) => v,
+                crate::services::crawler::MetadataItem::StageId(v) => v,
+                crate::services::crawler::MetadataItem::Kind(v) => v,
+                crate::services::crawler::MetadataItem::KindId(v) => v,
+                crate::services::crawler::MetadataItem::Procedure(v) => v,
+                crate::services::crawler::MetadataItem::ProcedureId(v) => v,
+                crate::services::crawler::MetadataItem::ProcedureResult(v) => v,
+                crate::services::crawler::MetadataItem::ProcedureResultId(v) => v,
+                crate::services::crawler::MetadataItem::NextStageDuration(v) => v,
+                crate::services::crawler::MetadataItem::ParallelStageStartDiscussion(v) => v,
+                crate::services::crawler::MetadataItem::ParallelStageEndDiscussion(v) => v,
+                crate::services::crawler::MetadataItem::StartDiscussion(v) => v,
+                crate::services::crawler::MetadataItem::EndDiscussion(v) => v,
+                crate::services::crawler::MetadataItem::Problem(v) => v,
+                crate::services::crawler::MetadataItem::Objectives(v) => v,
+                crate::services::crawler::MetadataItem::CirclePersons(v) => v,
+                crate::services::crawler::MetadataItem::SocialRelations(v) => v,
+                crate::services::crawler::MetadataItem::Rationale(v) => v,
+                crate::services::crawler::MetadataItem::TransitionPeriod(v) => v,
+                crate::services::crawler::MetadataItem::PlanDate(v) => v,
+                crate::services::crawler::MetadataItem::CompliteDateAct(v) => v,
+                crate::services::crawler::MetadataItem::CompliteNumberDepAct(v) => v,
+                crate::services::crawler::MetadataItem::CompliteNumberRegAct(v) => v,
+                crate::services::crawler::MetadataItem::ParallelStageFiles(v) => &v.join(", "),
+            };
+            ctx.insert(&key, value);
         }
         
         let rendered = tera.render("post_tpl", &ctx)
