@@ -1,9 +1,10 @@
 use luminis::run_with_config_path;
 use serial_test::serial;
 use wiremock::MockServer;
-use std::fs;
 use wiremock::http::Method;
 use urlencoding::decode;
+use assert_fs::prelude::*;
+use predicates::prelude::*;
 
 mod common;
 
@@ -50,12 +51,13 @@ async fn publish_mastodon_and_file_from_npalist_without_cache() {
     mount_mastodon(&server).await;
 
     // Setup config without cache
-    let tf = tempfile::NamedTempFile::new().unwrap();
+    let temp_dir = assert_fs::TempDir::new().unwrap();
+    let output_file = temp_dir.child("output.txt");
     let cache = tempfile::tempdir().unwrap();
 
     let cfg_file = render_config(
         &base,
-        tf.path().to_str().unwrap(),
+        output_file.path().to_str().unwrap(),
         cache.path().to_str().unwrap(),
         true,  // mastodon_enabled
         false, // telegram_enabled
@@ -69,12 +71,9 @@ async fn publish_mastodon_and_file_from_npalist_without_cache() {
         .await
         .unwrap();
 
-    // Проверка содержимого файла
-    let out = fs::read_to_string(tf.path()).unwrap();
-    assert!(
-        !out.trim().is_empty(),
-        "output file must contain published post"
-    );
+    // Проверка содержимого файла с помощью assert_fs
+    output_file.assert(predicate::path::is_file());
+    output_file.assert(predicate::str::is_empty().not());
     
     // Проверка полного содержимого файла
     let expected_content = "https://regulation.gov.ru/projects/160532
@@ -88,7 +87,7 @@ async fn publish_mastodon_and_file_from_npalist_without_cache() {
 Метаданные: [Деп:Минздрав России; Отв:Филиппов Олег Анатольевич]
 
 ";
-    assert_eq!(out, expected_content, "File content should match expected output");
+    output_file.assert(expected_content);
 
     // Детальная проверка публикации в Mastodon
     let received_requests = server.received_requests().await.unwrap();
@@ -137,7 +136,8 @@ async fn publish_only_file_from_npalist_with_cache() {
     mount_gemini_generate(&server).await;
 
     // Setup config with cache prepopulated
-    let tf = tempfile::NamedTempFile::new().unwrap();
+    let temp_dir = assert_fs::TempDir::new().unwrap();
+    let output_file = temp_dir.child("output.txt");
     let cache = tempfile::tempdir().unwrap();
     prepopulate_cache(
         cache.path().to_str().unwrap(),
@@ -147,7 +147,7 @@ async fn publish_only_file_from_npalist_with_cache() {
 
     let cfg_file = render_config(
         &base,
-        tf.path().to_str().unwrap(),
+        output_file.path().to_str().unwrap(),
         cache.path().to_str().unwrap(),
         false, // mastodon_enabled
         false, // telegram_enabled
@@ -160,11 +160,10 @@ async fn publish_only_file_from_npalist_with_cache() {
     let _ = run_with_config_path(cfg_file.path().to_str().unwrap(), None)
         .await
         .unwrap();
-    let out = fs::read_to_string(tf.path()).unwrap();
-    assert!(
-        !out.trim().is_empty(),
-        "output file must contain published post"
-    );
+    
+    // Проверка содержимого файла с помощью assert_fs
+    output_file.assert(predicate::path::is_file());
+    output_file.assert(predicate::str::is_empty().not());
     
     // Проверка полного содержимого файла
     let expected_content = "https://regulation.gov.ru/projects/160532
@@ -178,7 +177,7 @@ async fn publish_only_file_from_npalist_with_cache() {
 Метаданные: [Деп:Минздрав России; Отв:Филиппов Олег Анатольевич]
 
 ";
-    assert_eq!(out, expected_content, "File content should match expected output");
+    output_file.assert(expected_content);
 
     // Verify mocks were called (cache: stages/gemini not necessarily called)
     server.verify().await;
@@ -198,12 +197,13 @@ async fn publish_console_from_npalist_without_cache() {
     mount_gemini_generate(&server).await;
 
     // Setup config without cache
-    let tf = tempfile::NamedTempFile::new().unwrap();
+    let temp_dir = assert_fs::TempDir::new().unwrap();
+    let output_file = temp_dir.child("output.txt");
     let cache = tempfile::tempdir().unwrap();
 
     let cfg_file = render_config(
         &base,
-        tf.path().to_str().unwrap(),
+        output_file.path().to_str().unwrap(),
         cache.path().to_str().unwrap(),
         false, // mastodon_enabled
         false, // telegram_enabled
@@ -236,12 +236,13 @@ async fn publish_telegram_from_npalist_without_cache() {
     mount_telegram(&server).await;
 
     // Setup config without cache
-    let tf = tempfile::NamedTempFile::new().unwrap();
+    let temp_dir = assert_fs::TempDir::new().unwrap();
+    let output_file = temp_dir.child("output.txt");
     let cache = tempfile::tempdir().unwrap();
 
     let cfg_file = render_config(
         &base,
-        tf.path().to_str().unwrap(),
+        output_file.path().to_str().unwrap(),
         cache.path().to_str().unwrap(),
         false, // mastodon_enabled
         true,  // telegram_enabled
@@ -254,11 +255,10 @@ async fn publish_telegram_from_npalist_without_cache() {
     let _ = run_with_config_path(cfg_file.path().to_str().unwrap(), None)
         .await
         .unwrap();
-    let out = fs::read_to_string(tf.path()).unwrap();
-    assert!(
-        !out.trim().is_empty(),
-        "output file must contain published post"
-    );
+    
+    // Проверка содержимого файла с помощью assert_fs
+    output_file.assert(predicate::path::is_file());
+    output_file.assert(predicate::str::is_empty().not());
 
     // Детальная проверка публикации в Telegram
     let received_requests = server.received_requests().await.unwrap();
@@ -297,7 +297,8 @@ async fn publish_console_and_file_from_npalist_with_cache() {
     mount_gemini_generate(&server).await;
 
     // Setup config with cache prepopulated
-    let tf = tempfile::NamedTempFile::new().unwrap();
+    let temp_dir = assert_fs::TempDir::new().unwrap();
+    let output_file = temp_dir.child("output.txt");
     let cache = tempfile::tempdir().unwrap();
     prepopulate_cache(
         cache.path().to_str().unwrap(),
@@ -307,7 +308,7 @@ async fn publish_console_and_file_from_npalist_with_cache() {
 
     let cfg_file = render_config(
         &base,
-        tf.path().to_str().unwrap(),
+        output_file.path().to_str().unwrap(),
         cache.path().to_str().unwrap(),
         false, // mastodon_enabled
         false, // telegram_enabled
@@ -320,11 +321,9 @@ async fn publish_console_and_file_from_npalist_with_cache() {
     let _ = run_with_config_path(cfg_file.path().to_str().unwrap(), None)
         .await
         .unwrap();
-    let out = fs::read_to_string(tf.path()).unwrap();
-    assert!(
-        !out.trim().is_empty(),
-        "output file must contain published post"
-    );
+    // Проверка содержимого файла с помощью assert_fs
+    output_file.assert(predicate::path::is_file());
+    output_file.assert(predicate::str::is_empty().not());
     
     // Проверка полного содержимого файла
     let expected_content = "https://regulation.gov.ru/projects/160532
@@ -338,7 +337,7 @@ async fn publish_console_and_file_from_npalist_with_cache() {
 Метаданные: [Деп:Минздрав России; Отв:Филиппов Олег Анатольевич]
 
 ";
-    assert_eq!(out, expected_content, "File content should match expected output");
+    output_file.assert(expected_content);
 
     // Verify mocks were called (stages/gemini skipped due to cache)
     server.verify().await;
@@ -360,7 +359,8 @@ async fn publish_mastodon_and_telegram_from_npalist_with_cache() {
     mount_mastodon(&server).await;
 
     // Setup config with cache prepopulated
-    let tf = tempfile::NamedTempFile::new().unwrap();
+    let temp_dir = assert_fs::TempDir::new().unwrap();
+    let output_file = temp_dir.child("output.txt");
     let cache = tempfile::tempdir().unwrap();
     prepopulate_cache(
         cache.path().to_str().unwrap(),
@@ -370,7 +370,7 @@ async fn publish_mastodon_and_telegram_from_npalist_with_cache() {
 
     let cfg_file = render_config(
         &base,
-        tf.path().to_str().unwrap(),
+        output_file.path().to_str().unwrap(),
         cache.path().to_str().unwrap(),
         true,  // mastodon_enabled
         true,  // telegram_enabled
@@ -383,11 +383,9 @@ async fn publish_mastodon_and_telegram_from_npalist_with_cache() {
     let _ = run_with_config_path(cfg_file.path().to_str().unwrap(), None)
         .await
         .unwrap();
-    let out = fs::read_to_string(tf.path()).unwrap();
-    assert!(
-        !out.trim().is_empty(),
-        "output file must contain published post"
-    );
+    // Проверка содержимого файла с помощью assert_fs
+    output_file.assert(predicate::path::is_file());
+    output_file.assert(predicate::str::is_empty().not());
 
     // Детальная проверка публикации в Telegram и Mastodon
     let received_requests = server.received_requests().await.unwrap();
@@ -443,12 +441,13 @@ async fn publish_telegram_and_console_from_npalist_without_cache() {
     mount_telegram(&server).await;
 
     // Setup config without cache
-    let tf = tempfile::NamedTempFile::new().unwrap();
+    let temp_dir = assert_fs::TempDir::new().unwrap();
+    let output_file = temp_dir.child("output.txt");
     let cache = tempfile::tempdir().unwrap();
 
     let cfg_file = render_config(
         &base,
-        tf.path().to_str().unwrap(),
+        output_file.path().to_str().unwrap(),
         cache.path().to_str().unwrap(),
         false, // mastodon_enabled
         true,  // telegram_enabled
@@ -502,12 +501,13 @@ async fn publish_telegram_and_file_from_npalist_without_cache() {
     mount_telegram(&server).await;
 
     // Setup config without cache
-    let tf = tempfile::NamedTempFile::new().unwrap();
+    let temp_dir = assert_fs::TempDir::new().unwrap();
+    let output_file = temp_dir.child("output.txt");
     let cache = tempfile::tempdir().unwrap();
 
     let cfg_file = render_config(
         &base,
-        tf.path().to_str().unwrap(),
+        output_file.path().to_str().unwrap(),
         cache.path().to_str().unwrap(),
         false, // mastodon_enabled
         true,  // telegram_enabled
@@ -520,11 +520,9 @@ async fn publish_telegram_and_file_from_npalist_without_cache() {
     let _ = run_with_config_path(cfg_file.path().to_str().unwrap(), None)
         .await
         .unwrap();
-    let out = fs::read_to_string(tf.path()).unwrap();
-    assert!(
-        !out.trim().is_empty(),
-        "output file must contain published post"
-    );
+    // Проверка содержимого файла с помощью assert_fs
+    output_file.assert(predicate::path::is_file());
+    output_file.assert(predicate::str::is_empty().not());
     
     // Проверка полного содержимого файла
     let expected_content = "https://regulation.gov.ru/projects/160532
@@ -536,12 +534,9 @@ async fn publish_telegram_and_file_from_npalist_without_cache() {
 Коррупц. емкость: 6/10 (регион. перераспределение)
 
 Метаданные: [Деп:Минздрав России; Отв:Филиппов Олег Анатольевич]
+
 ";
-    assert_eq!(
-        out.trim(),
-        expected_content.trim(),
-        "output file content must match expected post template"
-    );
+    output_file.assert(expected_content);
 
     // Детальная проверка публикации в Telegram
     let received_requests = server.received_requests().await.unwrap();
@@ -581,7 +576,8 @@ async fn publish_telegram_and_file_from_npalist_with_cache() {
     mount_telegram(&server).await;
 
     // Setup config with cache prepopulated
-    let tf = tempfile::NamedTempFile::new().unwrap();
+    let temp_dir = assert_fs::TempDir::new().unwrap();
+    let output_file = temp_dir.child("output.txt");
     let cache = tempfile::tempdir().unwrap();
     prepopulate_cache(
         cache.path().to_str().unwrap(),
@@ -591,7 +587,7 @@ async fn publish_telegram_and_file_from_npalist_with_cache() {
 
     let cfg_file = render_config(
         &base,
-        tf.path().to_str().unwrap(),
+        output_file.path().to_str().unwrap(),
         cache.path().to_str().unwrap(),
         false, // mastodon_enabled
         true,  // telegram_enabled
@@ -604,11 +600,9 @@ async fn publish_telegram_and_file_from_npalist_with_cache() {
     let _ = run_with_config_path(cfg_file.path().to_str().unwrap(), None)
         .await
         .unwrap();
-    let out = fs::read_to_string(tf.path()).unwrap();
-    assert!(
-        !out.trim().is_empty(),
-        "output file must contain published post"
-    );
+    // Проверка содержимого файла с помощью assert_fs
+    output_file.assert(predicate::path::is_file());
+    output_file.assert(predicate::str::is_empty().not());
     
     // Проверка полного содержимого файла
     let expected_content = "https://regulation.gov.ru/projects/160532
@@ -622,7 +616,7 @@ async fn publish_telegram_and_file_from_npalist_with_cache() {
 Метаданные: [Деп:Минздрав России; Отв:Филиппов Олег Анатольевич]
 
 ";
-    assert_eq!(out, expected_content, "File content should match expected output");
+    output_file.assert(expected_content);
 
     // Детальная проверка публикации в Telegram
     let received_requests = server.received_requests().await.unwrap();
@@ -662,12 +656,13 @@ async fn publish_mastodon_and_console_from_npalist_without_cache() {
     mount_mastodon(&server).await;
 
     // Setup config without cache
-    let tf = tempfile::NamedTempFile::new().unwrap();
+    let temp_dir = assert_fs::TempDir::new().unwrap();
+    let output_file = temp_dir.child("output.txt");
     let cache = tempfile::tempdir().unwrap();
 
     let cfg_file = render_config(
         &base,
-        tf.path().to_str().unwrap(),
+        output_file.path().to_str().unwrap(),
         cache.path().to_str().unwrap(),
         true,  // mastodon_enabled
         false, // telegram_enabled
@@ -715,7 +710,8 @@ async fn publish_mastodon_and_console_from_npalist_with_cache() {
     mount_mastodon(&server).await;
 
     // Setup config with cache prepopulated
-    let tf = tempfile::NamedTempFile::new().unwrap();
+    let temp_dir = assert_fs::TempDir::new().unwrap();
+    let output_file = temp_dir.child("output.txt");
     let cache = tempfile::tempdir().unwrap();
     prepopulate_cache(
         cache.path().to_str().unwrap(),
@@ -725,7 +721,7 @@ async fn publish_mastodon_and_console_from_npalist_with_cache() {
 
     let cfg_file = render_config(
         &base,
-        tf.path().to_str().unwrap(),
+        output_file.path().to_str().unwrap(),
         cache.path().to_str().unwrap(),
         true,  // mastodon_enabled
         false, // telegram_enabled
@@ -773,7 +769,8 @@ async fn publish_mastodon_and_file_from_npalist_with_cache() {
     mount_mastodon(&server).await;
 
     // Setup config with cache prepopulated
-    let tf = tempfile::NamedTempFile::new().unwrap();
+    let temp_dir = assert_fs::TempDir::new().unwrap();
+    let output_file = temp_dir.child("output.txt");
     let cache = tempfile::tempdir().unwrap();
     prepopulate_cache(
         cache.path().to_str().unwrap(),
@@ -783,7 +780,7 @@ async fn publish_mastodon_and_file_from_npalist_with_cache() {
 
     let cfg_file = render_config(
         &base,
-        tf.path().to_str().unwrap(),
+        output_file.path().to_str().unwrap(),
         cache.path().to_str().unwrap(),
         true,  // mastodon_enabled
         false, // telegram_enabled
@@ -796,11 +793,9 @@ async fn publish_mastodon_and_file_from_npalist_with_cache() {
     let _ = run_with_config_path(cfg_file.path().to_str().unwrap(), None)
         .await
         .unwrap();
-    let out = fs::read_to_string(tf.path()).unwrap();
-    assert!(
-        !out.trim().is_empty(),
-        "output file must contain published post"
-    );
+    // Проверка содержимого файла с помощью assert_fs
+    output_file.assert(predicate::path::is_file());
+    output_file.assert(predicate::str::is_empty().not());
     
     // Проверка полного содержимого файла
     let expected_content = "https://regulation.gov.ru/projects/160532
@@ -814,7 +809,7 @@ async fn publish_mastodon_and_file_from_npalist_with_cache() {
 Метаданные: [Деп:Минздрав России; Отв:Филиппов Олег Анатольевич]
 
 ";
-    assert_eq!(out, expected_content, "File content should match expected output");
+    output_file.assert(expected_content);
 
     // Детальная проверка публикации в Mastodon
     let received_requests = server.received_requests().await.unwrap();
@@ -850,7 +845,8 @@ async fn publish_telegram_and_console_from_npalist_with_cache() {
     mount_telegram(&server).await;
 
     // Setup config with cache prepopulated
-    let tf = tempfile::NamedTempFile::new().unwrap();
+    let temp_dir = assert_fs::TempDir::new().unwrap();
+    let output_file = temp_dir.child("output.txt");
     let cache = tempfile::tempdir().unwrap();
     prepopulate_cache(
         cache.path().to_str().unwrap(),
@@ -860,7 +856,7 @@ async fn publish_telegram_and_console_from_npalist_with_cache() {
 
     let cfg_file = render_config(
         &base,
-        tf.path().to_str().unwrap(),
+        output_file.path().to_str().unwrap(),
         cache.path().to_str().unwrap(),
         false, // mastodon_enabled
         true,  // telegram_enabled

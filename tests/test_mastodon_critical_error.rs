@@ -50,6 +50,13 @@ async fn test_mastodon_critical_error_no_token_no_login_cli() {
     mount_gemini_generate(&server).await;
     mount_telegram(&server).await;
 
+    // Create isolated test environment without secrets/mastodon.yaml
+    let temp_dir = tempfile::tempdir().unwrap();
+    let original_dir = std::env::current_dir().unwrap();
+    
+    // Change to temp directory to avoid loading existing secrets/mastodon.yaml
+    std::env::set_current_dir(&temp_dir).unwrap();
+
     // Setup config with Mastodon enabled but no token and login_cli=false
     let tf = tempfile::NamedTempFile::new().unwrap();
     let cache = tempfile::tempdir().unwrap();
@@ -68,14 +75,14 @@ async fn test_mastodon_critical_error_no_token_no_login_cli() {
         None,  // mastodon_max_chars (default)
     );
 
-    // Modify config to set login_cli=false and remove access_token
+    // Modify config to remove access_token (login_cli is already false in template)
     let mut config_content = std::fs::read_to_string(cfg_file.path()).unwrap();
-    config_content = config_content.replace("login_cli: true", "login_cli: false");
     config_content = config_content.replace("access_token: TEST", "access_token: \"\"");
     std::fs::write(cfg_file.path(), config_content).unwrap();
 
     // Run the application - should fail with critical error
     let result = run_with_config_path(cfg_file.path().to_str().unwrap(), None).await;
+    
     
     // Verify that the application failed with the expected error
     assert!(result.is_err(), "Application should fail when Mastodon is enabled but no token available and login_cli=false");
@@ -91,6 +98,9 @@ async fn test_mastodon_critical_error_no_token_no_login_cli() {
     // The error indicates that at least one subsystem returned an error
     assert!(error_msg.contains("at least one subsystem returned an error"), 
         "Error message should indicate subsystem failure, got: {}", error_msg);
+    
+    // Restore original working directory
+    std::env::set_current_dir(&original_dir).unwrap();
 }
 
 #[tokio::test]
