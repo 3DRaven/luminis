@@ -49,7 +49,7 @@ async fn test_channel_specific_summarization_with_different_limits() {
     );
 
     // Run the application
-    let _ = run_with_config_path(cfg_file.path().to_str().unwrap())
+    let _ = run_with_config_path(cfg_file.path().to_str().unwrap(), None)
         .await
         .unwrap();
 
@@ -149,7 +149,7 @@ async fn test_channel_summarization_caching() {
     );
 
     // Run the application
-    let _ = run_with_config_path(cfg_file.path().to_str().unwrap())
+    let _ = run_with_config_path(cfg_file.path().to_str().unwrap(), None)
         .await
         .unwrap();
 
@@ -193,7 +193,7 @@ async fn test_disabled_channel_no_summarization() {
     );
 
     // Run the application
-    let _ = run_with_config_path(cfg_file.path().to_str().unwrap())
+    let _ = run_with_config_path(cfg_file.path().to_str().unwrap(), None)
         .await
         .unwrap();
 
@@ -244,7 +244,7 @@ async fn test_different_character_limits_per_channel() {
     );
 
     // Run the application
-    let _ = run_with_config_path(cfg_file.path().to_str().unwrap())
+    let _ = run_with_config_path(cfg_file.path().to_str().unwrap(), None)
         .await
         .unwrap();
 
@@ -364,7 +364,7 @@ async fn test_channel_summarization_cache_reuse() {
     );
 
     // Первый запуск - генерируем суммаризации
-    let _ = run_with_config_path(cfg_file.path().to_str().unwrap())
+    let _ = run_with_config_path(cfg_file.path().to_str().unwrap(), None)
         .await
         .unwrap();
 

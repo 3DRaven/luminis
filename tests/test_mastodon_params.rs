@@ -69,7 +69,7 @@ async fn test_mastodon_visibility_public() {
     );
 
     // Run the application
-    let _ = run_with_config_path(cfg_file.path().to_str().unwrap())
+    let _ = run_with_config_path(cfg_file.path().to_str().unwrap(), None)
         .await
         .unwrap();
 
@@ -113,7 +113,7 @@ async fn test_mastodon_visibility_private() {
     );
 
     // Run the application
-    let _ = run_with_config_path(cfg_file.path().to_str().unwrap())
+    let _ = run_with_config_path(cfg_file.path().to_str().unwrap(), None)
         .await
         .unwrap();
 
@@ -157,7 +157,7 @@ async fn test_mastodon_language_en() {
     );
 
     // Run the application
-    let _ = run_with_config_path(cfg_file.path().to_str().unwrap())
+    let _ = run_with_config_path(cfg_file.path().to_str().unwrap(), None)
         .await
         .unwrap();
 
@@ -201,7 +201,7 @@ async fn test_mastodon_sensitive_true() {
     );
 
     // Run the application
-    let _ = run_with_config_path(cfg_file.path().to_str().unwrap())
+    let _ = run_with_config_path(cfg_file.path().to_str().unwrap(), None)
         .await
         .unwrap();
 
@@ -245,7 +245,7 @@ async fn test_mastodon_sensitive_false() {
     );
 
     // Run the application
-    let _ = run_with_config_path(cfg_file.path().to_str().unwrap())
+    let _ = run_with_config_path(cfg_file.path().to_str().unwrap(), None)
         .await
         .unwrap();
 
@@ -289,7 +289,7 @@ async fn test_mastodon_max_chars_custom() {
     );
 
     // Run the application
-    let _ = run_with_config_path(cfg_file.path().to_str().unwrap())
+    let _ = run_with_config_path(cfg_file.path().to_str().unwrap(), None)
         .await
         .unwrap();
 
@@ -333,7 +333,7 @@ async fn test_mastodon_language_de() {
     );
 
     // Run the application
-    let _ = run_with_config_path(cfg_file.path().to_str().unwrap())
+    let _ = run_with_config_path(cfg_file.path().to_str().unwrap(), None)
         .await
         .unwrap();
 
@@ -377,7 +377,7 @@ async fn test_mastodon_multiple_params() {
     );
 
     // Run the application
-    let _ = run_with_config_path(cfg_file.path().to_str().unwrap())
+    let _ = run_with_config_path(cfg_file.path().to_str().unwrap(), None)
         .await
         .unwrap();
 

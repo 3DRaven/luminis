@@ -9,6 +9,10 @@ struct Args {
     /// Путь к файлу конфигурации
     #[arg(short, long, default_value = "config.yaml")]
     config: String,
+    
+    /// Путь к файлу для записи логов (опционально)
+    #[arg(long)]
+    log_file: Option<String>,
 }
 
 #[tokio::main]
@@ -20,5 +24,5 @@ async fn main() -> std::io::Result<()> {
     let args = Args::parse();
 
     // Load config, init logging and run
-    run_with_config_path(&args.config).await
+    run_with_config_path(&args.config, args.log_file.as_deref()).await
 }

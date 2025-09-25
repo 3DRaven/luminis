@@ -1,0 +1,19 @@
+# Конфигурационные файлы с секретами
+config/config.yaml
+secrets/mastodon.yaml
+
+# Переменные окружения (не используются)
+# .env
+
+# Логи
+logs/*.log
+
+# Кэш приложения
+cache/*
+
+# Кэш Cargo
+cargo-cache/*
+
+# Временные файлы
+*.tmp
+*.temp

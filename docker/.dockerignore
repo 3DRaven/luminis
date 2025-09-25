@@ -1,0 +1,44 @@
+# Git
+.git
+.gitignore
+
+# Docker
+Dockerfile*
+docker-compose*
+.dockerignore
+
+# Rust
+target/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Cache
+cache/
+
+# Secrets (не копируем реальные секреты)
+secrets/*.yaml
+!secrets/*.example
+
+# Tests
+tests/
+
+# Documentation
+docs/
+README.md
+LICENSE
+
+# Temporary files
+*.tmp
+*.temp

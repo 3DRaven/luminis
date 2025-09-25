@@ -48,7 +48,7 @@ async fn publish_all_publishers_from_both_sources_without_cache() {
         true, // npalist_enabled
     );
 
-    let _ = run_with_config_path(cfg_file.path().to_str().unwrap())
+    let _ = run_with_config_path(cfg_file.path().to_str().unwrap(), None)
         .await
         .unwrap();
     let out = fs::read_to_string(tf.path()).unwrap();

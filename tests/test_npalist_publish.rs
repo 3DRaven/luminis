@@ -65,7 +65,7 @@ async fn publish_mastodon_and_file_from_npalist_without_cache() {
         true,  // npalist_enabled
     );
 
-    let _ = run_with_config_path(cfg_file.path().to_str().unwrap())
+    let _ = run_with_config_path(cfg_file.path().to_str().unwrap(), None)
         .await
         .unwrap();
 
@@ -157,7 +157,7 @@ async fn publish_only_file_from_npalist_with_cache() {
         true,  // npalist_enabled
     );
 
-    let _ = run_with_config_path(cfg_file.path().to_str().unwrap())
+    let _ = run_with_config_path(cfg_file.path().to_str().unwrap(), None)
         .await
         .unwrap();
     let out = fs::read_to_string(tf.path()).unwrap();
@@ -213,7 +213,7 @@ async fn publish_console_from_npalist_without_cache() {
         true,  // npalist_enabled
     );
 
-    let _ = run_with_config_path(cfg_file.path().to_str().unwrap())
+    let _ = run_with_config_path(cfg_file.path().to_str().unwrap(), None)
         .await
         .unwrap();
 
@@ -251,7 +251,7 @@ async fn publish_telegram_from_npalist_without_cache() {
         true,  // npalist_enabled
     );
 
-    let _ = run_with_config_path(cfg_file.path().to_str().unwrap())
+    let _ = run_with_config_path(cfg_file.path().to_str().unwrap(), None)
         .await
         .unwrap();
     let out = fs::read_to_string(tf.path()).unwrap();
@@ -317,7 +317,7 @@ async fn publish_console_and_file_from_npalist_with_cache() {
         true,  // npalist_enabled
     );
 
-    let _ = run_with_config_path(cfg_file.path().to_str().unwrap())
+    let _ = run_with_config_path(cfg_file.path().to_str().unwrap(), None)
         .await
         .unwrap();
     let out = fs::read_to_string(tf.path()).unwrap();
@@ -380,7 +380,7 @@ async fn publish_mastodon_and_telegram_from_npalist_with_cache() {
         true,  // npalist_enabled
     );
 
-    let _ = run_with_config_path(cfg_file.path().to_str().unwrap())
+    let _ = run_with_config_path(cfg_file.path().to_str().unwrap(), None)
         .await
         .unwrap();
     let out = fs::read_to_string(tf.path()).unwrap();
@@ -458,7 +458,7 @@ async fn publish_telegram_and_console_from_npalist_without_cache() {
         true,  // npalist_enabled
     );
 
-    let _ = run_with_config_path(cfg_file.path().to_str().unwrap())
+    let _ = run_with_config_path(cfg_file.path().to_str().unwrap(), None)
         .await
         .unwrap();
 
@@ -517,7 +517,7 @@ async fn publish_telegram_and_file_from_npalist_without_cache() {
         true,  // npalist_enabled
     );
 
-    let _ = run_with_config_path(cfg_file.path().to_str().unwrap())
+    let _ = run_with_config_path(cfg_file.path().to_str().unwrap(), None)
         .await
         .unwrap();
     let out = fs::read_to_string(tf.path()).unwrap();
@@ -601,7 +601,7 @@ async fn publish_telegram_and_file_from_npalist_with_cache() {
         true,  // npalist_enabled
     );
 
-    let _ = run_with_config_path(cfg_file.path().to_str().unwrap())
+    let _ = run_with_config_path(cfg_file.path().to_str().unwrap(), None)
         .await
         .unwrap();
     let out = fs::read_to_string(tf.path()).unwrap();
@@ -677,7 +677,7 @@ async fn publish_mastodon_and_console_from_npalist_without_cache() {
         true,  // npalist_enabled
     );
 
-    let _ = run_with_config_path(cfg_file.path().to_str().unwrap())
+    let _ = run_with_config_path(cfg_file.path().to_str().unwrap(), None)
         .await
         .unwrap();
 
@@ -735,7 +735,7 @@ async fn publish_mastodon_and_console_from_npalist_with_cache() {
         true,  // npalist_enabled
     );
 
-    let _ = run_with_config_path(cfg_file.path().to_str().unwrap())
+    let _ = run_with_config_path(cfg_file.path().to_str().unwrap(), None)
         .await
         .unwrap();
 
@@ -793,7 +793,7 @@ async fn publish_mastodon_and_file_from_npalist_with_cache() {
         true,  // npalist_enabled
     );
 
-    let _ = run_with_config_path(cfg_file.path().to_str().unwrap())
+    let _ = run_with_config_path(cfg_file.path().to_str().unwrap(), None)
         .await
         .unwrap();
     let out = fs::read_to_string(tf.path()).unwrap();
@@ -870,7 +870,7 @@ async fn publish_telegram_and_console_from_npalist_with_cache() {
         true,  // npalist_enabled
     );
 
-    let _ = run_with_config_path(cfg_file.path().to_str().unwrap())
+    let _ = run_with_config_path(cfg_file.path().to_str().unwrap(), None)
         .await
         .unwrap();
 

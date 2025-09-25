@@ -21,3 +21,5 @@ target
 #.idea/
 config.yaml
 secrets/mastodon.yaml
+docker/secrets/secrets.yaml
+docker/config/config.yaml

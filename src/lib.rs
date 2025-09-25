@@ -21,18 +21,38 @@ use crate::subsystems::npalistcrawler::NpaListCrawlerSubsystem;
 use crate::subsystems::worker::WorkerSubsystem;
 
 /// High-level entrypoint: load config, init logging, run worker
-pub async fn run_with_config_path(path: &str) -> std::io::Result<()> {
+pub async fn run_with_config_path(path: &str, log_file: Option<&str>) -> std::io::Result<()> {
     // Load YAML config
     let cfg: AppConfig = load_config(path)
         .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, format!("Failed to load {}: {}", path, e)))?;
 
     // Initialize structured logging (default to info if RUST_LOG not set)
     let log_spec = std::env::var("RUST_LOG").unwrap_or_else(|_| "info".to_string());
-    let _ = tracing_subscriber::fmt()
-        .with_env_filter(tracing_subscriber::EnvFilter::new(log_spec))
-        .with_target(false)
-        .compact()
-        .try_init();
+    
+    // Проверяем, нужно ли логирование в файл
+    if let Some(log_path) = log_file {
+        // Логирование в файл и консоль
+        let file_appender = tracing_appender::rolling::daily(
+            std::path::Path::new(&log_path).parent().unwrap_or(std::path::Path::new("/tmp")),
+            std::path::Path::new(&log_path).file_name().unwrap_or(std::ffi::OsStr::new("luminis.log"))
+        );
+        
+        let (non_blocking, _guard) = tracing_appender::non_blocking(file_appender);
+        
+        let _ = tracing_subscriber::fmt()
+            .with_env_filter(tracing_subscriber::EnvFilter::new(log_spec))
+            .with_target(false)
+            .compact()
+            .with_writer(non_blocking)
+            .try_init();
+    } else {
+        // Только консольное логирование
+        let _ = tracing_subscriber::fmt()
+            .with_env_filter(tracing_subscriber::EnvFilter::new(log_spec))
+            .with_target(false)
+            .compact()
+            .try_init();
+    }
 
     // Initialize shared services from config
     let chat_api: Arc<dyn ChatApi> = Arc::new(LocalChatApi::from_config(&cfg.llm));

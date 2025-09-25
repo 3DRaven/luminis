@@ -49,7 +49,7 @@ async fn publish_mastodon_and_telegram_and_file_from_rss_with_cache() {
         true,  // npalist_enabled (будет падать с ошибкой, сработает RSS fallback)
     );
 
-    let _ = run_with_config_path(cfg_file.path().to_str().unwrap())
+    let _ = run_with_config_path(cfg_file.path().to_str().unwrap(), None)
         .await
         .unwrap();
     let out = fs::read_to_string(tf.path()).unwrap();
@@ -163,7 +163,7 @@ async fn publish_telegram_and_file_from_rss_with_cache() {
         true,  // npalist_enabled (будет падать с ошибкой, сработает RSS fallback)
     );
 
-    let _ = run_with_config_path(cfg_file.path().to_str().unwrap())
+    let _ = run_with_config_path(cfg_file.path().to_str().unwrap(), None)
         .await
         .unwrap();
     let out = fs::read_to_string(tf.path()).unwrap();
@@ -240,7 +240,7 @@ async fn publish_console_from_rss_without_cache() {
         true,  // npalist_enabled (будет падать с ошибкой, сработает RSS fallback)
     );
 
-    let _ = run_with_config_path(cfg_file.path().to_str().unwrap())
+    let _ = run_with_config_path(cfg_file.path().to_str().unwrap(), None)
         .await
         .unwrap();
 
@@ -281,7 +281,7 @@ async fn publish_mastodon_full_no_cache() {
     );
 
     // Act: run app with generated config (single run)
-    let _ = run_with_config_path(cfg_file.path().to_str().unwrap())
+    let _ = run_with_config_path(cfg_file.path().to_str().unwrap(), None)
         .await
         .unwrap();
 
@@ -354,7 +354,7 @@ async fn publish_mastodon_from_rss_without_cache() {
         true,  // npalist_enabled (будет падать с ошибкой, сработает RSS fallback)
     );
 
-    let _ = run_with_config_path(cfg_file.path().to_str().unwrap())
+    let _ = run_with_config_path(cfg_file.path().to_str().unwrap(), None)
         .await
         .unwrap();
 
@@ -392,7 +392,7 @@ async fn publish_telegram_from_rss_without_cache() {
         true,  // npalist_enabled (будет падать с ошибкой, сработает RSS fallback)
     );
 
-    let _ = run_with_config_path(cfg_file.path().to_str().unwrap())
+    let _ = run_with_config_path(cfg_file.path().to_str().unwrap(), None)
         .await
         .unwrap();
 
@@ -448,7 +448,7 @@ async fn publish_only_file_from_rss_without_cache() {
         true,  // npalist_enabled (будет падать с ошибкой, сработает RSS fallback)
     );
 
-    let _ = run_with_config_path(cfg_file.path().to_str().unwrap())
+    let _ = run_with_config_path(cfg_file.path().to_str().unwrap(), None)
         .await
         .unwrap();
     let out = fs::read_to_string(tf.path()).unwrap();
@@ -509,7 +509,7 @@ async fn publish_console_and_file_from_rss_with_cache() {
         true,  // npalist_enabled (будет падать с ошибкой, сработает RSS fallback)
     );
 
-    let _ = run_with_config_path(cfg_file.path().to_str().unwrap())
+    let _ = run_with_config_path(cfg_file.path().to_str().unwrap(), None)
         .await
         .unwrap();
     let out = fs::read_to_string(tf.path()).unwrap();
@@ -571,7 +571,7 @@ async fn publish_mastodon_and_console_from_rss_with_cache() {
         true,  // npalist_enabled (будет падать с ошибкой, сработает RSS fallback)
     );
 
-    let _ = run_with_config_path(cfg_file.path().to_str().unwrap())
+    let _ = run_with_config_path(cfg_file.path().to_str().unwrap(), None)
         .await
         .unwrap();
     // Verify mocks were called (stages/gemini skipped due to cache)
@@ -611,7 +611,7 @@ async fn publish_mastodon_and_telegram_from_rss_without_cache() {
         true,  // npalist_enabled (будет падать с ошибкой, сработает RSS fallback)
     );
 
-    let _ = run_with_config_path(cfg_file.path().to_str().unwrap())
+    let _ = run_with_config_path(cfg_file.path().to_str().unwrap(), None)
         .await
         .unwrap();
 
@@ -705,7 +705,7 @@ async fn publish_mastodon_and_telegram_from_rss_with_cache() {
         true,  // npalist_enabled (будет падать с ошибкой, сработает RSS fallback)
     );
 
-    let _ = run_with_config_path(cfg_file.path().to_str().unwrap())
+    let _ = run_with_config_path(cfg_file.path().to_str().unwrap(), None)
         .await
         .unwrap();
 
@@ -792,7 +792,7 @@ async fn publish_mastodon_and_file_from_rss_without_cache() {
         true,  // npalist_enabled (будет падать с ошибкой, сработает RSS fallback)
     );
 
-    let _ = run_with_config_path(cfg_file.path().to_str().unwrap())
+    let _ = run_with_config_path(cfg_file.path().to_str().unwrap(), None)
         .await
         .unwrap();
     let out = fs::read_to_string(tf.path()).unwrap();
@@ -883,7 +883,7 @@ async fn publish_mastodon_and_file_from_rss_with_cache() {
         true,  // npalist_enabled (будет падать с ошибкой, сработает RSS fallback)
     );
 
-    let _ = run_with_config_path(cfg_file.path().to_str().unwrap())
+    let _ = run_with_config_path(cfg_file.path().to_str().unwrap(), None)
         .await
         .unwrap();
     let out = fs::read_to_string(tf.path()).unwrap();
@@ -969,7 +969,7 @@ async fn publish_telegram_and_file_from_rss_without_cache() {
         true,  // npalist_enabled (будет падать с ошибкой, сработает RSS fallback)
     );
 
-    let _ = run_with_config_path(cfg_file.path().to_str().unwrap())
+    let _ = run_with_config_path(cfg_file.path().to_str().unwrap(), None)
         .await
         .unwrap();
     let out = fs::read_to_string(tf.path()).unwrap();
@@ -1045,7 +1045,7 @@ async fn publish_telegram_and_console_from_rss_without_cache() {
         true,  // npalist_enabled (будет падать с ошибкой, сработает RSS fallback)
     );
 
-    let _ = run_with_config_path(cfg_file.path().to_str().unwrap())
+    let _ = run_with_config_path(cfg_file.path().to_str().unwrap(), None)
         .await
         .unwrap();
 
@@ -1107,7 +1107,7 @@ async fn publish_telegram_and_console_from_rss_with_cache() {
         true,  // npalist_enabled (будет падать с ошибкой, сработает RSS fallback)
     );
 
-    let _ = run_with_config_path(cfg_file.path().to_str().unwrap())
+    let _ = run_with_config_path(cfg_file.path().to_str().unwrap(), None)
         .await
         .unwrap();
 
@@ -1161,7 +1161,7 @@ async fn test_both_crawlers_fail_with_retry() {
     );
 
     // Run for a short time to allow retries
-    let _ = run_with_config_path(cfg_file.path().to_str().unwrap())
+    let _ = run_with_config_path(cfg_file.path().to_str().unwrap(), None)
         .await
         .unwrap();
 
@@ -1197,7 +1197,7 @@ async fn test_multiple_retry_attempts_with_logging() {
     );
 
     // Run for a short time to allow retries
-    let _ = run_with_config_path(cfg_file.path().to_str().unwrap())
+    let _ = run_with_config_path(cfg_file.path().to_str().unwrap(), None)
         .await
         .unwrap();
 

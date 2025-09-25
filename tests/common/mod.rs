@@ -110,6 +110,39 @@ pub async fn mount_mastodon(server: &MockServer) {
     server.register(mock).await;
 }
 
+/// Мок для регистрации приложения в Mastodon
+pub async fn mount_mastodon_app_registration(server: &MockServer) {
+    let app_response = r#"{
+        "id": "123456789",
+        "name": "luminis",
+        "website": null,
+        "redirect_uri": "urn:ietf:wg:oauth:2.0:oob",
+        "client_id": "test_client_id",
+        "client_secret": "test_client_secret",
+        "vapid_key": null
+    }"#;
+    
+    let mock = Mock::given(method("POST"))
+        .and(path("/api/v1/apps"))
+        .respond_with(ResponseTemplate::new(200).set_body_string(app_response));
+    server.register(mock).await;
+}
+
+/// Мок для получения токена доступа после авторизации
+pub async fn mount_mastodon_token_exchange(server: &MockServer) {
+    let token_response = r#"{
+        "access_token": "test_access_token_12345",
+        "token_type": "Bearer",
+        "scope": "read write follow push",
+        "created_at": 1640995200
+    }"#;
+    
+    let mock = Mock::given(method("POST"))
+        .and(path("/oauth/token"))
+        .respond_with(ResponseTemplate::new(200).set_body_string(token_response));
+    server.register(mock).await;
+}
+
 /// Создает мок Mastodon с проверкой конкретных параметров запроса
 pub async fn mount_mastodon_with_params_check(
     server: &MockServer,

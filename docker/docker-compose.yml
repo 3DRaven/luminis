@@ -1,0 +1,27 @@
+services:
+  # Основное приложение
+  luminis:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      args:
+        # Передача кэша Cargo для ускорения сборки
+        BUILDKIT_INLINE_CACHE: 1
+    container_name: luminis-app
+    volumes:
+      # Монтирование конфигурационных файлов (read-write для редактирования)
+      - ./config:/app/config
+      - ./secrets:/app/secrets
+      # Монтирование кэша приложения для персистентности
+      - ./cache:/app/cache
+      # Монтирование логов
+      - ./logs:/app/logs
+    environment:
+      - RUST_LOG=info
+      - RUST_BACKTRACE=1
+    restart: unless-stopped
+    networks:
+      - luminis-network
+networks:
+  luminis-network:
+    driver: bridge

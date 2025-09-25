@@ -52,8 +52,10 @@ impl Worker {
         cache_manager: Arc<dyn CacheManager>,
     ) -> std::io::Result<Self> {
         // Инициализация Mastodon
+        // КРИТИЧЕСКИ ВАЖНО: Если Mastodon включен как канал публикации (enabled: true),
+        // приложение требует успешной авторизации. При неудаче приложение завершается с ошибкой.
         let mastodon: Option<Arc<MastodonPublisher>> = if let Some(m) = config.mastodon.as_ref().filter(|m| m.enabled) {
-            // 1) access_token в config
+            // 1) Проверяем access_token в конфигурации
             if !m.access_token.is_empty() {
                 Some(Arc::new(MastodonPublisher::builder()
                     .client(Client::new())
@@ -61,7 +63,7 @@ impl Worker {
                     .access_token(m.access_token.clone())
                     .build()))
             } else {
-                // 2) secrets file
+                // 2) Пытаемся загрузить токен из файла secrets/mastodon.yaml
                 let token_path = std::path::Path::new("./secrets/mastodon.yaml");
                 match load_token_from_secrets(token_path) {
                     Ok(Some(token)) => Some(Arc::new(MastodonPublisher::builder()
@@ -70,7 +72,7 @@ impl Worker {
                         .access_token(token)
                         .build())),
                     _ => {
-                        // 3) CLI login если разрешено
+                        // 3) Интерактивная авторизация через CLI (если разрешена)
                         if m.login_cli.unwrap_or(false) {
                             match ensure_mastodon_token(&m.base_url, token_path).await {
                                 Ok(token) => Some(Arc::new(MastodonPublisher::builder()
@@ -80,16 +82,24 @@ impl Worker {
                                     .build())),
                                 Err(e) => { 
                                     error!(error = %e, "mastodon login_cli failed"); 
-                                    None 
+                                    return Err(std::io::Error::new(
+                                        std::io::ErrorKind::PermissionDenied,
+                                        format!("Критическая ошибка: не удалось авторизоваться в Mastodon. Mastodon включен как канал публикации, но авторизация не удалась: {}", e)
+                                    ));
                                 }
                             }
                         } else { 
-                            None 
+                            // КРИТИЧЕСКАЯ ОШИБКА: Mastodon включен, но токен недоступен и CLI логин отключен
+                            return Err(std::io::Error::new(
+                                std::io::ErrorKind::InvalidInput,
+                                "Критическая ошибка: Mastodon включен как канал публикации, но токен доступа недоступен. Укажите access_token в конфигурации или установите login_cli: true для интерактивной авторизации."
+                            ));
                         }
                     }
                 }
             }
         } else { 
+            // Mastodon отключен - это нормально
             None 
         };
 
