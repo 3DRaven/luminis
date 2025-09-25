@@ -46,6 +46,7 @@ ahash = "0.8.12"
 ai-lib = "0.3.4"
 strum = { version = "0.27.2", features = ["derive"] }
 strum_macros = "0.27.2"
+derive_more = { version = "1.0.0", features = ["from", "into", "display", "as_ref", "from_str"] }
 roxmltree = "0.20.0"
 tempfile = "3.22.0"
 markdownify = "0.2.1"

@@ -1,6 +1,7 @@
 pub mod services;
 pub mod traits;
 pub mod subsystems;
+pub mod models;
 
 use std::sync::Arc;
 use std::time::Duration;

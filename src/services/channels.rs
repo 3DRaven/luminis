@@ -1,18 +1,19 @@
 use crate::services::settings::AppConfig;
+use crate::models::channel::PublisherChannel;
 use std::collections::HashMap;
 use bon::bon;
 
 /// Определение канала публикации с его лимитами
 #[derive(Debug, Clone)]
 pub struct ChannelConfig {
-    pub name: String,
+    pub channel: PublisherChannel,
     pub max_chars: usize,
     pub enabled: bool,
 }
 
 /// Менеджер каналов публикации
 pub struct ChannelManager {
-    channels: HashMap<String, ChannelConfig>,
+    channels: HashMap<PublisherChannel, ChannelConfig>,
 }
 
 #[bon]
@@ -23,8 +24,8 @@ impl ChannelManager {
 
         // Telegram канал
         if let Some(telegram) = &config.telegram {
-            channels.insert("telegram".to_string(), ChannelConfig {
-                name: "telegram".to_string(),
+            channels.insert(PublisherChannel::Telegram, ChannelConfig {
+                channel: PublisherChannel::Telegram,
                 max_chars: telegram.max_chars.unwrap_or(4096),
                 enabled: telegram.enabled,
             });
@@ -32,8 +33,8 @@ impl ChannelManager {
 
         // Mastodon канал
         if let Some(mastodon) = &config.mastodon {
-            channels.insert("mastodon".to_string(), ChannelConfig {
-                name: "mastodon".to_string(),
+            channels.insert(PublisherChannel::Mastodon, ChannelConfig {
+                channel: PublisherChannel::Mastodon,
                 max_chars: mastodon.max_chars.unwrap_or(495),
                 enabled: mastodon.enabled,
             });
@@ -41,8 +42,8 @@ impl ChannelManager {
 
         // Console канал
         if let Some(output) = &config.output {
-            channels.insert("console".to_string(), ChannelConfig {
-                name: "console".to_string(),
+            channels.insert(PublisherChannel::Console, ChannelConfig {
+                channel: PublisherChannel::Console,
                 max_chars: output.console_max_chars.unwrap_or(10000),
                 enabled: output.console_enabled.unwrap_or(true),
             });
@@ -50,8 +51,8 @@ impl ChannelManager {
 
         // File канал
         if let Some(output) = &config.output {
-            channels.insert("file".to_string(), ChannelConfig {
-                name: "file".to_string(),
+            channels.insert(PublisherChannel::File, ChannelConfig {
+                channel: PublisherChannel::File,
                 max_chars: output.file_max_chars.unwrap_or(20000),
                 enabled: output.file_enabled.unwrap_or(false),
             });
@@ -66,8 +67,8 @@ impl ChannelManager {
     }
 
     /// Получает конфигурацию канала по имени
-    pub fn get_channel(&self, name: &str) -> Option<&ChannelConfig> {
-        self.channels.get(name)
+    pub fn get_channel(&self, channel: PublisherChannel) -> Option<&ChannelConfig> {
+        self.channels.get(&channel)
     }
 
     /// Получает список всех каналов (включенных и отключенных)
@@ -76,12 +77,12 @@ impl ChannelManager {
     }
 
     /// Проверяет, включен ли канал
-    pub fn is_channel_enabled(&self, name: &str) -> bool {
-        self.channels.get(name).map(|c| c.enabled).unwrap_or(false)
+    pub fn is_channel_enabled(&self, channel: PublisherChannel) -> bool {
+        self.channels.get(&channel).map(|c| c.enabled).unwrap_or(false)
     }
 
     /// Получает лимит символов для канала
-    pub fn get_channel_limit(&self, name: &str) -> Option<usize> {
-        self.channels.get(name).map(|c| c.max_chars)
+    pub fn get_channel_limit(&self, channel: PublisherChannel) -> Option<usize> {
+        self.channels.get(&channel).map(|c| c.max_chars)
     }
 }

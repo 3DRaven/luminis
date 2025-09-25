@@ -2,6 +2,11 @@
 
 use crate::services::crawler::FileIdScanner;
 use crate::traits::markdown_fetcher::MarkdownFetcher;
+use crate::models::channel::PublisherChannel;
+use crate::models::types::{
+    ProjectId, DocxPath, MarkdownPath, SummaryPath, PostPath, 
+    SummaryText, PostText, CreatedAt
+};
 use markdownify::docx;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
@@ -91,16 +96,16 @@ impl DocxMarkdownFetcher {
 
 #[derive(Serialize, Deserialize)]
 pub struct CacheMetadata {
-    pub project_id: String,
-    pub docx_path: String,
-    pub markdown_path: String,
-    pub summary_path: Option<String>,
-    pub post_path: Option<String>,
-    pub published_channels: Vec<String>,
-    pub created_at: String,
+    pub project_id: ProjectId,
+    pub docx_path: DocxPath,
+    pub markdown_path: MarkdownPath,
+    pub summary_path: Option<SummaryPath>,
+    pub post_path: Option<PostPath>,
+    pub published_channels: Vec<PublisherChannel>,
+    pub created_at: CreatedAt,
     // Новые поля для суммаризаций по каналам
-    pub channel_summaries: std::collections::HashMap<String, String>, // channel_name -> summary_text
-    pub channel_posts: std::collections::HashMap<String, String>,     // channel_name -> post_text
+    pub channel_summaries: std::collections::HashMap<PublisherChannel, SummaryText>, // channel -> summary_text
+    pub channel_posts: std::collections::HashMap<PublisherChannel, PostText>,     // channel -> post_text
 }
 
 pub fn save_cache_artifacts(
@@ -110,11 +115,11 @@ pub fn save_cache_artifacts(
     markdown_text: &str,
     summary_text: &str,
     post_text: &str,
-    published_channels: &[String],
+    published_channels: &[PublisherChannel],
 ) -> std::io::Result<()> {
     let base = project_dir(cache_dir, project_id);
     fs::create_dir_all(&base)?;
-    let ts = chrono::Utc::now().to_rfc3339();
+    let ts: CreatedAt = chrono::Utc::now().to_rfc3339().into();
 
     // per-project subdir layout
     let docx_path = base.join("source.docx");
@@ -135,21 +140,21 @@ pub fn save_cache_artifacts(
     }
 
     let meta = CacheMetadata {
-        project_id: project_id.to_string(),
-        docx_path: docx_path.to_string_lossy().to_string(),
-        markdown_path: md_path.to_string_lossy().to_string(),
+        project_id: project_id.to_string().into(),
+        docx_path: docx_path.to_string_lossy().to_string().into(),
+        markdown_path: md_path.to_string_lossy().to_string().into(),
         summary_path: if !summary_text.is_empty() {
-            Some(sum_path.to_string_lossy().to_string())
+            Some(sum_path.to_string_lossy().to_string().into())
         } else {
             None
         },
         post_path: if !post_text.is_empty() {
-            Some(post_path.to_string_lossy().to_string())
+            Some(post_path.to_string_lossy().to_string().into())
         } else {
             None
         },
         published_channels: published_channels.to_vec(),
-        created_at: ts,
+        created_at: ts.into(),
         channel_summaries: HashMap::new(), // Будет заполняться отдельно
         channel_posts: HashMap::new(),      // Будет заполняться отдельно
     };
@@ -200,38 +205,38 @@ pub fn load_cached_summary(cache_dir: &str, project_id: &str) -> io::Result<Opti
 pub fn add_published_channels(
     cache_dir: &str,
     project_id: &str,
-    new_channels: &[&str],
+    new_channels: &[PublisherChannel],
 ) -> io::Result<()> {
     let p = meta_path_for(cache_dir, project_id);
     let mut meta = if p.exists() {
         let data = fs::read_to_string(&p)?;
         serde_json::from_str::<CacheMetadata>(&data).unwrap_or(CacheMetadata {
-            project_id: project_id.to_string(),
-            docx_path: String::new(),
-            markdown_path: String::new(),
+            project_id: project_id.to_string().into(),
+            docx_path: String::new().into(),
+            markdown_path: String::new().into(),
             summary_path: None,
             post_path: None,
             published_channels: vec![],
-            created_at: chrono::Utc::now().to_rfc3339(),
+            created_at: chrono::Utc::now().to_rfc3339().into(),
             channel_summaries: HashMap::new(),
             channel_posts: HashMap::new(),
         })
     } else {
         CacheMetadata {
-            project_id: project_id.to_string(),
-            docx_path: String::new(),
-            markdown_path: String::new(),
+            project_id: project_id.to_string().into(),
+            docx_path: String::new().into(),
+            markdown_path: String::new().into(),
             summary_path: None,
             post_path: None,
             published_channels: vec![],
-            created_at: chrono::Utc::now().to_rfc3339(),
+            created_at: chrono::Utc::now().to_rfc3339().into(),
             channel_summaries: HashMap::new(),
             channel_posts: HashMap::new(),
         }
     };
     for ch in new_channels {
         if !meta.published_channels.iter().any(|c| c == ch) {
-            meta.published_channels.push(ch.to_string());
+            meta.published_channels.push(*ch);
         }
     }
     let out = serde_json::to_string_pretty(&meta).unwrap_or_else(|_| "{}".to_string());

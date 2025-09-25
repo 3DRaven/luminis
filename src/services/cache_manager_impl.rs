@@ -6,6 +6,8 @@ use bon::Builder;
 
 use crate::traits::cache_manager::CacheManager;
 use crate::services::documents::CacheMetadata;
+use crate::models::channel::PublisherChannel;
+use crate::models::types::{CreatedAt, SummaryText, PostText};
 
 /// Реализация CacheManager для файловой системы
 #[derive(Builder)]
@@ -34,11 +36,11 @@ impl CacheManager for FileSystemCacheManager {
         markdown_text: &str,
         summary_text: &str,
         post_text: &str,
-        published_channels: &[String],
+        published_channels: &[PublisherChannel],
     ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         let base = self.project_dir(project_id);
         fs::create_dir_all(&base)?;
-        let ts = chrono::Utc::now().to_rfc3339();
+        let ts: CreatedAt = chrono::Utc::now().to_rfc3339().into();
 
         // per-project subdir layout
         let docx_path = base.join("source.docx");
@@ -59,21 +61,21 @@ impl CacheManager for FileSystemCacheManager {
         }
 
         let meta = CacheMetadata {
-            project_id: project_id.to_string(),
-            docx_path: docx_path.to_string_lossy().to_string(),
-            markdown_path: md_path.to_string_lossy().to_string(),
+            project_id: project_id.to_string().into(),
+            docx_path: docx_path.to_string_lossy().to_string().into(),
+            markdown_path: md_path.to_string_lossy().to_string().into(),
             summary_path: if !summary_text.is_empty() {
-                Some(sum_path.to_string_lossy().to_string())
+                Some(sum_path.to_string_lossy().to_string().into())
             } else {
                 None
             },
             post_path: if !post_text.is_empty() {
-                Some(post_path.to_string_lossy().to_string())
+                Some(post_path.to_string_lossy().to_string().into())
             } else {
                 None
             },
             published_channels: published_channels.to_vec(),
-            created_at: ts,
+            created_at: ts.into(),
             channel_summaries: std::collections::HashMap::new(),
             channel_posts: std::collections::HashMap::new(),
         };
@@ -145,38 +147,38 @@ impl CacheManager for FileSystemCacheManager {
     async fn add_published_channels(
         &self,
         project_id: &str,
-        new_channels: &[&str],
+        new_channels: &[PublisherChannel],
     ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         let p = self.meta_path_for(project_id);
         let mut meta = if p.exists() {
             let data = fs::read_to_string(&p)?;
             serde_json::from_str::<CacheMetadata>(&data).unwrap_or(CacheMetadata {
-                project_id: project_id.to_string(),
-                docx_path: String::new(),
-                markdown_path: String::new(),
+                project_id: project_id.to_string().into(),
+                docx_path: String::new().into(),
+                markdown_path: String::new().into(),
                 summary_path: None,
                 post_path: None,
                 published_channels: vec![],
-                created_at: chrono::Utc::now().to_rfc3339(),
+                created_at: chrono::Utc::now().to_rfc3339().into(),
                 channel_summaries: std::collections::HashMap::new(),
                 channel_posts: std::collections::HashMap::new(),
             })
         } else {
             CacheMetadata {
-                project_id: project_id.to_string(),
-                docx_path: String::new(),
-                markdown_path: String::new(),
+                project_id: project_id.to_string().into(),
+                docx_path: String::new().into(),
+                markdown_path: String::new().into(),
                 summary_path: None,
                 post_path: None,
                 published_channels: vec![],
-                created_at: chrono::Utc::now().to_rfc3339(),
+                created_at: chrono::Utc::now().to_rfc3339().into(),
                 channel_summaries: std::collections::HashMap::new(),
                 channel_posts: std::collections::HashMap::new(),
             }
         };
         for ch in new_channels {
             if !meta.published_channels.iter().any(|c| c == ch) {
-                meta.published_channels.push(ch.to_string());
+                meta.published_channels.push(*ch);
             }
         }
         let out = serde_json::to_string_pretty(&meta).unwrap_or_else(|_| "{}".to_string());
@@ -203,10 +205,10 @@ impl CacheManager for FileSystemCacheManager {
     async fn is_published_in_channel(
         &self,
         project_id: &str,
-        channel: &str,
+        channel: PublisherChannel,
     ) -> Result<bool, Box<dyn std::error::Error + Send + Sync>> {
-        let channels = self.get_published_channels(project_id).await?;
-        Ok(channels.iter().any(|c| c == channel))
+        let meta = self.load_metadata(project_id).await?;
+        Ok(meta.map(|m| m.published_channels.contains(&channel)).unwrap_or(false))
     }
 
     async fn get_published_channels(
@@ -214,47 +216,47 @@ impl CacheManager for FileSystemCacheManager {
         project_id: &str,
     ) -> Result<Vec<String>, Box<dyn std::error::Error + Send + Sync>> {
         let meta = self.load_metadata(project_id).await?;
-        Ok(meta.map(|m| m.published_channels).unwrap_or_default())
+        Ok(meta.map(|m| m.published_channels.iter().map(|c| c.as_str().to_string()).collect()).unwrap_or_default())
     }
 
     async fn has_channel_summary(
         &self,
         project_id: &str,
-        channel: &str,
+        channel: PublisherChannel,
     ) -> Result<bool, Box<dyn std::error::Error + Send + Sync>> {
         let meta = self.load_metadata(project_id).await?;
-        Ok(meta.map(|m| m.channel_summaries.contains_key(channel)).unwrap_or(false))
+        Ok(meta.map(|m| m.channel_summaries.contains_key(&channel)).unwrap_or(false))
     }
 
     async fn load_channel_summary(
         &self,
         project_id: &str,
-        channel: &str,
-    ) -> Result<Option<String>, Box<dyn std::error::Error + Send + Sync>> {
+        channel: PublisherChannel,
+    ) -> Result<Option<SummaryText>, Box<dyn std::error::Error + Send + Sync>> {
         let meta = self.load_metadata(project_id).await?;
-        Ok(meta.and_then(|m| m.channel_summaries.get(channel).cloned()))
+        Ok(meta.and_then(|m| m.channel_summaries.get(&channel).cloned()))
     }
 
     async fn save_channel_summary(
         &self,
         project_id: &str,
-        channel: &str,
+        channel: PublisherChannel,
         summary_text: &str,
     ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         let mut meta = self.load_metadata(project_id).await?
             .unwrap_or_else(|| CacheMetadata {
-                project_id: project_id.to_string(),
-                docx_path: String::new(),
-                markdown_path: String::new(),
+                project_id: project_id.to_string().into(),
+                docx_path: String::new().into(),
+                markdown_path: String::new().into(),
                 summary_path: None,
                 post_path: None,
                 published_channels: Vec::new(),
-                created_at: chrono::Utc::now().to_rfc3339(),
+                created_at: chrono::Utc::now().to_rfc3339().into(),
                 channel_summaries: std::collections::HashMap::new(),
                 channel_posts: std::collections::HashMap::new(),
             });
         
-        meta.channel_summaries.insert(channel.to_string(), summary_text.to_string());
+        meta.channel_summaries.insert(channel, summary_text.to_string().into());
         
         let meta_path = self.meta_path_for(project_id);
         let json = serde_json::to_string_pretty(&meta).unwrap_or_else(|_| "{}".to_string());
@@ -265,41 +267,41 @@ impl CacheManager for FileSystemCacheManager {
     async fn has_channel_post(
         &self,
         project_id: &str,
-        channel: &str,
+        channel: PublisherChannel,
     ) -> Result<bool, Box<dyn std::error::Error + Send + Sync>> {
         let meta = self.load_metadata(project_id).await?;
-        Ok(meta.map(|m| m.channel_posts.contains_key(channel)).unwrap_or(false))
+        Ok(meta.map(|m| m.channel_posts.contains_key(&channel)).unwrap_or(false))
     }
 
     async fn load_channel_post(
         &self,
         project_id: &str,
-        channel: &str,
-    ) -> Result<Option<String>, Box<dyn std::error::Error + Send + Sync>> {
+        channel: PublisherChannel,
+    ) -> Result<Option<PostText>, Box<dyn std::error::Error + Send + Sync>> {
         let meta = self.load_metadata(project_id).await?;
-        Ok(meta.and_then(|m| m.channel_posts.get(channel).cloned()))
+        Ok(meta.and_then(|m| m.channel_posts.get(&channel).cloned()))
     }
 
     async fn save_channel_post(
         &self,
         project_id: &str,
-        channel: &str,
+        channel: PublisherChannel,
         post_text: &str,
     ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         let mut meta = self.load_metadata(project_id).await?
             .unwrap_or_else(|| CacheMetadata {
-                project_id: project_id.to_string(),
-                docx_path: String::new(),
-                markdown_path: String::new(),
+                project_id: project_id.to_string().into(),
+                docx_path: String::new().into(),
+                markdown_path: String::new().into(),
                 summary_path: None,
                 post_path: None,
                 published_channels: Vec::new(),
-                created_at: chrono::Utc::now().to_rfc3339(),
+                created_at: chrono::Utc::now().to_rfc3339().into(),
                 channel_summaries: std::collections::HashMap::new(),
                 channel_posts: std::collections::HashMap::new(),
             });
         
-        meta.channel_posts.insert(channel.to_string(), post_text.to_string());
+        meta.channel_posts.insert(channel, post_text.to_string().into());
         
         let meta_path = self.meta_path_for(project_id);
         let json = serde_json::to_string_pretty(&meta).unwrap_or_else(|_| "{}".to_string());

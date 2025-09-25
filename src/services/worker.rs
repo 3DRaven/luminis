@@ -15,6 +15,7 @@ use crate::traits::cache_manager::CacheManager;
 use crate::services::summarizer::Summarizer;
 use crate::services::settings::AppConfig;
 use crate::services::channels::ChannelManager;
+use crate::models::channel::PublisherChannel;
 
 /// Trim text to at most `max_chars` characters, appending an ellipsis if trimmed.
 /// Uses char-aware slicing to avoid breaking UTF-8 sequences.
@@ -394,7 +395,7 @@ impl Worker {
     async fn process_channel_summary(
         &self,
         project_id: &str,
-        channel: &str,
+        channel: PublisherChannel,
         title: &str,
         url: &str,
         markdown_text: &str,
@@ -407,7 +408,7 @@ impl Worker {
                 match self.cache_manager.load_channel_summary(project_id, channel).await {
                     Ok(Some(summary)) => {
                         info!(project_id = %project_id, channel = %channel, "successfully loaded cached channel summary, len={}", summary.len());
-                        return Ok(summary);
+                        return Ok(summary.into_inner());
                     },
                     Ok(None) => {
                         error!(project_id = %project_id, channel = %channel, "cache inconsistency: has_channel_summary=true but load_channel_summary=None");
@@ -451,7 +452,7 @@ impl Worker {
     async fn process_channel_post(
         &self,
         project_id: &str,
-        channel: &str,
+        channel: PublisherChannel,
         _title: &str,
         _url: &str,
         summary: &str,
@@ -464,7 +465,7 @@ impl Worker {
                 match self.cache_manager.load_channel_post(project_id, channel).await {
                     Ok(Some(post)) => {
                         info!(project_id = %project_id, channel = %channel, "successfully loaded cached channel post, len={}", post.len());
-                        return Ok(post);
+                        return Ok(post.into_inner());
                     },
                     Ok(None) => {
                         error!(project_id = %project_id, channel = %channel, "cache inconsistency: has_channel_post=true but load_channel_post=None");
@@ -509,10 +510,11 @@ impl Worker {
         let enabled_channels = self.channel_manager.get_enabled_channels();
         
         for channel_config in enabled_channels {
-            let channel_name = &channel_config.name;
+            let channel = channel_config.channel;
+            let channel_name = channel.as_str();
             
             // Проверяем, не опубликован ли уже в этом канале
-            if self.cache_manager.is_published_in_channel(project_id, channel_name).await.unwrap_or(false) {
+            if self.cache_manager.is_published_in_channel(project_id, channel).await.unwrap_or(false) {
                 info!(project_id = %project_id, channel = %channel_name, "skip republish: channel already published");
                 continue;
             }
@@ -520,7 +522,7 @@ impl Worker {
             // Генерируем суммаризацию для этого канала
             let channel_summary = self.process_channel_summary(
                 project_id,
-                channel_name,
+                channel,
                 title,
                 url,
                 markdown_text,
@@ -530,7 +532,7 @@ impl Worker {
             // Генерируем пост для этого канала
             let channel_post = self.process_channel_post(
                 project_id,
-                channel_name,
+                channel,
                 title,
                 url,
                 &channel_summary,
@@ -538,10 +540,10 @@ impl Worker {
             ).await?;
             
             // Публикуем в канале
-            match self.publish_to_channel(channel_name, &channel_post, &item).await {
+            match self.publish_to_channel(channel, &channel_post, &item).await {
                 Ok(success) => {
                     if success {
-                        published_channels.push(channel_name.clone());
+                        published_channels.push(channel_name.to_string());
                         info!(project_id = %project_id, channel = %channel_name, "successfully published to channel");
                     } else {
                         info!(project_id = %project_id, channel = %channel_name, "publication to channel skipped");
@@ -555,9 +557,15 @@ impl Worker {
         
         // Обновляем список опубликованных каналов в кэше
         if !published_channels.is_empty() {
-            let channel_refs: Vec<&str> = published_channels.iter().map(|s| s.as_str()).collect();
-            if let Err(e) = self.cache_manager.add_published_channels(project_id, &channel_refs).await {
-                error!(project_id = %project_id, error = %e, "failed to update published channels in cache");
+            // Конвертируем строки обратно в PublisherChannel для кэша
+            let channels: Result<Vec<PublisherChannel>, _> = published_channels.iter()
+                .map(|s| PublisherChannel::from_str(s))
+                .collect();
+            
+            if let Ok(channels) = channels {
+                if let Err(e) = self.cache_manager.add_published_channels(project_id, &channels).await {
+                    error!(project_id = %project_id, error = %e, "failed to update published channels in cache");
+                }
             }
         }
         
@@ -567,17 +575,17 @@ impl Worker {
     /// Публикует пост в конкретном канале
     async fn publish_to_channel(
         &self,
-        channel_name: &str,
+        channel: PublisherChannel,
         post_text: &str,
         item: &CrawlItem,
     ) -> std::io::Result<bool> {
-        match channel_name {
-            "telegram" => {
+        match channel {
+            PublisherChannel::Telegram => {
                 if let (Some(api), Some(chat_id)) = (&self.telegram_api, &self.target_chat_id) {
                     let publisher = TelegramPublisherAdapter { 
                         api: api.clone(), 
                         chat_id: *chat_id,
-                        max_chars: self.channel_manager.get_channel_limit("telegram")
+                        max_chars: self.channel_manager.get_channel_limit(PublisherChannel::Telegram)
                     };
                     match publisher.publish(&item.title, &item.url, post_text).await {
                         Ok(_) => Ok(true),
@@ -591,7 +599,7 @@ impl Worker {
                     Ok(false)
                 }
             }
-            "mastodon" => {
+            PublisherChannel::Mastodon => {
                 if let Some(mastodon) = &self.mastodon {
                     let publisher = MastodonPublisherAdapter { 
                         client: mastodon.clone(),
@@ -599,7 +607,7 @@ impl Worker {
                         language: self.config.mastodon.as_ref().and_then(|m| m.language.clone()),
                         spoiler_text: self.config.mastodon.as_ref().and_then(|m| m.spoiler_text.clone()),
                         sensitive: self.config.mastodon.as_ref().and_then(|m| m.sensitive).unwrap_or(false),
-                        max_chars: self.channel_manager.get_channel_limit("mastodon")
+                        max_chars: self.channel_manager.get_channel_limit(PublisherChannel::Mastodon)
                     };
                     match publisher.publish(&item.title, &item.url, post_text).await {
                         Ok(_) => Ok(true),
@@ -613,8 +621,8 @@ impl Worker {
                     Ok(false)
                 }
             }
-            "console" => {
-                let publisher = ConsolePublisher { max_chars: self.channel_manager.get_channel_limit("console") };
+            PublisherChannel::Console => {
+                let publisher = ConsolePublisher { max_chars: self.channel_manager.get_channel_limit(PublisherChannel::Console) };
                 match publisher.publish(&item.title, &item.url, post_text).await {
                     Ok(_) => Ok(true),
                     Err(e) => {
@@ -623,13 +631,13 @@ impl Worker {
                     }
                 }
             }
-            "file" => {
+            PublisherChannel::File => {
                 let file_path = self.config.output.as_ref()
                     .and_then(|o| o.file_path.clone())
                     .unwrap_or_else(|| "./post.txt".to_string());
                 let publisher = FilePublisher { 
                     path: file_path,
-                    max_chars: self.channel_manager.get_channel_limit("file"),
+                    max_chars: self.channel_manager.get_channel_limit(PublisherChannel::File),
                     append: self.config.output.as_ref().and_then(|o| o.file_append).unwrap_or(false)
                 };
                 match publisher.publish(&item.title, &item.url, post_text).await {
@@ -639,10 +647,6 @@ impl Worker {
                         Ok(false)
                     }
                 }
-            }
-            _ => {
-                error!(channel = %channel_name, "unknown channel");
-                Ok(false)
             }
         }
     }
