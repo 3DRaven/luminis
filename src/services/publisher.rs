@@ -100,11 +100,7 @@ impl Publisher for MastodonPublisherAdapter {
     async fn publish(&self, _title: &str, _url: &str, text: &str) -> Result<(), Box<dyn Error + Send + Sync>> {
         let cut = if let Some(maxc) = self.max_chars { trim_with_ellipsis(text, maxc) } else { text.to_string() };
         let lang = self.language.as_deref().unwrap_or("ru");
-        let lang = match lang {
-            "ru" => Some(Language::Rus),
-            "en" => Some(Language::Eng),
-            _ => None,
-        };
+        let lang = Language::from_639_1(lang);
         let vis = self.visibility.as_deref();
         let spoiler = self.spoiler_text.as_deref().filter(|s| !s.is_empty());
         info!(

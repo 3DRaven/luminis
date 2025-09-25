@@ -63,12 +63,9 @@ impl MastodonPublisher {
             body.push(("visibility", v.to_string()));
         }
         if let Some(lang) = language {
-            let code = match lang {
-                Language::Eng => "en",
-                Language::Rus => "ru",
-                _ => "ru",
-            };
-            body.push(("language", code.to_string()));
+            if let Some(code) = lang.to_639_1() {
+                body.push(("language", code.to_string()));
+            }
         }
         if let Some(sp) = spoiler_text {
             if !sp.is_empty() {

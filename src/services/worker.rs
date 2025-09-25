@@ -184,11 +184,11 @@ impl Worker {
                         }
                         Ok(None) => {
                             info!(project_id = %pid, "no fileId found, skipping");
-                            return Ok(published_count);
+                            continue;
                         }
                         Err(e) => {
                             error!(project_id = %pid, error = %e, "failed to fetch markdown");
-                            return Ok(published_count);
+                            continue;
                         }
                     }
                 } else {
@@ -247,10 +247,8 @@ impl Worker {
                 
                 published_names
             } else {
-                return Err(std::io::Error::new(
-                    std::io::ErrorKind::Other,
-                    "project_id not found in url",
-                ));
+                error!("project_id not found in url, skipping item");
+                continue;
             };
             if !published_names.is_empty() { 
                 published_count += 1; 

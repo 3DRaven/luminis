@@ -32,9 +32,9 @@ mastodon:
   access_token: TEST
   enabled: {{ mastodon_enabled }}
   login_cli: false
-  visibility: unlisted
-  language: ru
-  sensitive: false
+  visibility: {{ mastodon_visibility | default(value="unlisted") }}
+  language: {{ mastodon_language | default(value="ru") }}
+  sensitive: {{ mastodon_sensitive | default(value=false) }}
   max_chars: {{ mastodon_max_chars | default(value=495) }}
 output:
   console_enabled: {{ console_enabled }}

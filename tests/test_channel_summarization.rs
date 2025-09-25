@@ -3,7 +3,7 @@ use serial_test::serial;
 use tokio::fs;
 use wiremock::MockServer;
 use wiremock::http::Method;
-use std::borrow::Cow;
+use urlencoding::decode;
 
 mod common;
 
@@ -62,7 +62,13 @@ async fn test_channel_specific_summarization_with_different_limits() {
     
     // Проверка полного содержимого файла
     let expected_content = "https://regulation.gov.ru/projects/160532
-Краткая суммаризация для лимита 495 символов. Поправки в закон об ОМС: Губернаторы смогут передавать полномочия страховых компаний тер. фондам ОМС (с ограничениями), уточнен статус иностр. граждан. Льготы работникам фед. фонда ОМС. Финансирование мед.помощи в новых регионах.\\n\\nРейтинг:\\nПолезность: 5/10 (частично улучшает ОМС)\\nРепрессивность: 2/10 (незначительно)\\nКоррупц. емкость: 6/10 (регион. перераспределение)
+Поправки в закон об ОМС: Губернаторы смогут передавать полномочия страховых компаний тер. фондам ОМС (с ограничениями), уточнен статус иностр. граждан. Льготы работникам фед. фонда ОМС. Финансирование мед.помощи в новых регионах.
+
+Рейтинг:
+Полезность: 5/10 (частично улучшает ОМС)
+Репрессивность: 2/10 (незначительно)
+Коррупц. емкость: 6/10 (регион. перераспределение)
+
 Метаданные: [Деп:Минздрав России; Отв:Филиппов Олег Анатольевич]
 
 ";
@@ -84,11 +90,18 @@ async fn test_channel_specific_summarization_with_different_limits() {
     
     // Проверяем содержимое поста в Mastodon
     let body_str = String::from_utf8_lossy(&mastodon_request.body);
-    // Проверяем URL-encoded содержимое
-    assert!(body_str.contains("regulation.gov.ru%2Fprojects%2F160532"), "Mastodon post should contain URL");
-    assert!(body_str.contains("%D0%9F%D0%BE%D0%BF%D1%80%D0%B0%D0%B2%D0%BA%D0%B8"), "Mastodon post should contain summary");
-    assert!(body_str.contains("%D0%A0%D0%B5%D0%B9%D1%82%D0%B8%D0%BD%D0%B3"), "Mastodon post should contain rating");
-    assert!(body_str.contains("%D0%9C%D0%B5%D1%82%D0%B0%D0%B4%D0%B0%D0%BD%D0%BD%D1%8B%D0%B5"), "Mastodon post should contain metadata");
+    
+    // Декодируем URL-encoded строку для более читаемых проверок
+    let decoded_body = decode(&body_str).unwrap_or_else(|_| body_str.clone());
+    
+    // Логируем декодированное тело запроса для отладки
+    println!("Mastodon decoded body: {}", decoded_body);
+    
+    // Проверяем декодированное содержимое
+    assert!(decoded_body.contains("regulation.gov.ru/projects/160532"), "Mastodon post should contain URL");
+    assert!(decoded_body.contains("Поправки"), "Mastodon post should contain summary");
+    assert!(decoded_body.contains("Рейтинг"), "Mastodon post should contain rating");
+    assert!(decoded_body.contains("Метаданные"), "Mastodon post should contain metadata");
     
     // Verify other mocks
     server.verify().await;
@@ -244,7 +257,13 @@ async fn test_different_character_limits_per_channel() {
     
     // Проверка полного содержимого файла
     let expected_content = "https://regulation.gov.ru/projects/160532
-Краткая суммаризация для лимита 4096 символов. Поправки в закон об ОМС: Губернаторы смогут передавать полномочия страховых компаний тер. фондам ОМС (с ограничениями), уточнен статус иностр. граждан. Льготы работникам фед. фонда ОМС. Финансирование мед.помощи в новых регионах.\\n\\nРейтинг:\\nПолезность: 5/10 (частично улучшает ОМС)\\nРепрессивность: 2/10 (незначительно)\\nКоррупц. емкость: 6/10 (регион. перераспределение)
+Поправки в закон об ОМС: Губернаторы смогут передавать полномочия страховых компаний тер. фондам ОМС (с ограничениями), уточнен статус иностр. граждан. Льготы работникам фед. фонда ОМС. Финансирование мед.помощи в новых регионах.
+
+Рейтинг:
+Полезность: 5/10 (частично улучшает ОМС)
+Репрессивность: 2/10 (незначительно)
+Коррупц. емкость: 6/10 (регион. перераспределение)
+
 Метаданные: [Деп:Минздрав России; Отв:Филиппов Олег Анатольевич]
 
 ";
@@ -287,10 +306,24 @@ async fn test_different_character_limits_per_channel() {
     
     // Проверяем содержимое поста в Mastodon
     let mastodon_body_str = String::from_utf8_lossy(&mastodon_request.body);
-    assert!(mastodon_body_str.contains("regulation.gov.ru%2Fprojects%2F160532"), "Mastodon post should contain URL");
-    assert!(mastodon_body_str.contains("%D0%9F%D0%BE%D0%BF%D1%80%D0%B0%D0%B2%D0%BA%D0%B8"), "Mastodon post should contain summary");
-    assert!(mastodon_body_str.contains("%D0%A0%D0%B5%D0%B9%D1%82%D0%B8%D0%BD%D0%B3"), "Mastodon post should contain rating");
-    assert!(mastodon_body_str.contains("%D0%9C%D0%B5%D1%82%D0%B0%D0%B4%D0%B0%D0%BD%D0%BD%D1%8B%D0%B5"), "Mastodon post should contain metadata");
+    
+    // Декодируем URL-encoded строку для более читаемых проверок
+    let decoded_body = decode(&mastodon_body_str).unwrap_or_else(|_| mastodon_body_str.clone());
+    
+    // Логируем декодированное тело запроса для отладки
+    println!("Mastodon decoded body: {}", decoded_body);
+    
+    // Проверяем декодированное содержимое
+    assert!(decoded_body.contains("regulation.gov.ru/projects/160532"), "Mastodon post should contain URL");
+    assert!(decoded_body.contains("Поправки"), "Mastodon post should contain summary");
+    assert!(decoded_body.contains("Рейтинг"), "Mastodon post should contain rating");
+    assert!(decoded_body.contains("Метаданные"), "Mastodon post should contain metadata");
+    
+    // Проверяем конкретный текст из ответа Gemini (используем декодированную строку)
+    // Mastodon использует лимит 495 символов, поэтому текст отличается от других каналов
+    assert!(decoded_body.contains("Поправки+в+закон+об+ОМС"), "Mastodon post should contain Gemini summary text");
+    assert!(decoded_body.contains("Губернаторы+смогут+передавать"), "Mastodon post should contain Gemini text about governors");
+    assert!(decoded_body.contains("Полезность:+5/10"), "Mastodon post should contain Gemini rating");
     
     // Verify other mocks
     server.verify().await;

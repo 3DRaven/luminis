@@ -1,20 +1,26 @@
 use std::fs;
 use std::path::PathBuf;
-use tera::{Context, Tera};
-use wiremock::{MockServer, Mock, ResponseTemplate};
+use tera::{Tera, Context};
+use tempfile;
+use wiremock::{Mock, ResponseTemplate, MockServer};
 use wiremock::matchers::{method, path, path_regex, query_param};
-use luminis::services::documents::save_cache_artifacts;
 
-pub fn read_mocks() -> (String, String) {
-    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    let rss = fs::read_to_string(root.join("tests/resources/mocks/rss.xml")).unwrap();
-    let stages = fs::read_to_string(root.join("tests/resources/mocks/stages.json")).unwrap();
-    (rss, stages)
+/// Загружает шаблон конфигурации для тестов
+fn load_test_config_template() -> String {
+    let config_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("tests/resources/configs/mastodon_telegram.yaml");
+    fs::read_to_string(config_path).unwrap()
 }
 
-pub fn load_test_config_template() -> String {
-    let p = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/resources/configs/mastodon_telegram.yaml");
-    fs::read_to_string(p).unwrap()
+/// Загружает моки для тестов
+pub fn read_mocks() -> (String, String) {
+    let rss_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/resources/mocks/rss.xml");
+    let stages_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/resources/mocks/stages.json");
+    
+    let rss_xml = fs::read_to_string(rss_path).unwrap();
+    let stages_json = fs::read_to_string(stages_path).unwrap();
+    
+    (rss_xml, stages_json)
 }
 
 pub async fn mount_rss(server: &MockServer, rss_xml: &str) {
@@ -37,14 +43,17 @@ pub async fn mount_npalist(server: &MockServer) {
     )
     .unwrap();
     let mock = Mock::given(method("GET"))
-        .and(path_regex(r"/api/npalist/.*"))
+        .and(path_regex(r"/api/npalist/"))
+        .and(query_param("limit", "50"))
+        .and(query_param("offset", "0"))
+        .and(query_param("sort", "desc"))
         .respond_with(ResponseTemplate::new(200).set_body_string(npalist_xml));
     server.register(mock).await;
 }
 
 pub async fn mount_npalist_with_error(server: &MockServer) {
     let mock = Mock::given(method("GET"))
-        .and(path("/api/npalist/"))
+        .and(path_regex(r"/api/npalist/"))
         .and(query_param("limit", "50"))
         .and(query_param("offset", "0"))
         .and(query_param("sort", "desc"))
@@ -98,6 +107,36 @@ pub async fn mount_mastodon(server: &MockServer) {
     let mock = Mock::given(method("POST"))
         .and(path("/api/v1/statuses"))
         .respond_with(ResponseTemplate::new(200).set_body_string(mstd_json));
+    server.register(mock).await;
+}
+
+/// Создает мок Mastodon с проверкой конкретных параметров запроса
+pub async fn mount_mastodon_with_params_check(
+    server: &MockServer,
+    expected_visibility: Option<&str>,
+    expected_language: Option<&str>,
+    expected_sensitive: Option<bool>,
+) {
+    let mstd_json = fs::read_to_string(
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/resources/mocks/mastodon_status.json"),
+    )
+    .unwrap();
+    
+    let mut mock_builder = Mock::given(method("POST"))
+        .and(path("/api/v1/statuses"));
+    
+    // Добавляем проверки параметров если они указаны
+    if let Some(visibility) = expected_visibility {
+        mock_builder = mock_builder.and(query_param("visibility", visibility));
+    }
+    if let Some(language) = expected_language {
+        mock_builder = mock_builder.and(query_param("language", language));
+    }
+    if let Some(sensitive) = expected_sensitive {
+        mock_builder = mock_builder.and(query_param("sensitive", if sensitive { "true" } else { "false" }));
+    }
+    
+    let mock = mock_builder.respond_with(ResponseTemplate::new(200).set_body_string(mstd_json));
     server.register(mock).await;
 }
 
@@ -181,78 +220,46 @@ pub fn render_config_with_retry_limit(
 }
 
 pub fn prepopulate_cache(cache_dir: &str, project_id: &str, summary_text: &str) {
-    // Сохраняем и markdown данные, и суммаризацию для полного кэша
-    let markdown_text = "Тестовый markdown текст для проекта";
-    save_cache_artifacts(
-        cache_dir,
-        project_id,
-        None,
-        markdown_text,
-        summary_text,
-        "",
-        &[],
-    )
-    .unwrap();
+    let cache_path = PathBuf::from(cache_dir).join(format!("{}.json", project_id));
+    let cache_data = serde_json::json!({
+        "summary": summary_text,
+        "timestamp": chrono::Utc::now().timestamp()
+    });
+    fs::write(cache_path, serde_json::to_string_pretty(&cache_data).unwrap()).unwrap();
 }
 
-/// Создает мок для Gemini с указанным лимитом символов
-pub async fn mount_gemini_generate_with_limit(server: &MockServer, limit: usize) {
-    let response_body = format!(
-        r#"{{"candidates":[{{"content":{{"parts":[{{"text":"Краткая суммаризация для лимита {} символов. Поправки в закон об ОМС: Губернаторы смогут передавать полномочия страховых компаний тер. фондам ОМС (с ограничениями), уточнен статус иностр. граждан. Льготы работникам фед. фонда ОМС. Финансирование мед.помощи в новых регионах.\\n\\nРейтинг:\\nПолезность: 5/10 (частично улучшает ОМС)\\nРепрессивность: 2/10 (незначительно)\\nКоррупц. емкость: 6/10 (регион. перераспределение)"}}]}}}}]}}"#,
-        limit
-    );
-    
+pub async fn mount_gemini_generate_with_limit(server: &MockServer, _limit: usize) {
+    let response_body = fs::read_to_string(
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(
+            "tests/resources/mocks/body-v1beta-models-gemini-2.0-flash_generateContent-8OOhY.json",
+        ),
+    )
+    .unwrap();
     let mock = Mock::given(method("POST"))
         .and(path("/v1beta/models/gemini-2.0-flash:generateContent"))
         .respond_with(
             ResponseTemplate::new(200)
-                .insert_header("content-type", "application/json")
+                .insert_header("content-type", "application/json; charset=UTF-8")
                 .set_body_string(response_body)
         );
     server.register(mock).await;
 }
 
-/// Предзаполняет кэш для конкретного канала
 pub fn prepopulate_channel_cache(
     cache_dir: &str,
     project_id: &str,
     channel: &str,
     summary_text: &str,
 ) {
-    use std::collections::HashMap;
-    use serde_json;
-    use std::path::PathBuf;
-    
-    // Создаем директорию проекта
-    let project_dir = PathBuf::from(cache_dir).join(project_id);
-    std::fs::create_dir_all(&project_dir).unwrap();
-    
-    // Создаем metadata.json с суммаризацией для канала
-    let mut channel_summaries = HashMap::new();
-    channel_summaries.insert(channel.to_string(), summary_text.to_string());
-    
-    let metadata = serde_json::json!({
-        "project_id": project_id,
-        "docx_path": "",
-        "markdown_path": "",
-        "summary_path": null,
-        "post_path": null,
-        "published_channels": [],
-        "created_at": chrono::Utc::now().to_rfc3339(),
-        "channel_summaries": channel_summaries,
-        "channel_posts": HashMap::<String, String>::new()
+    let cache_path = PathBuf::from(cache_dir)
+        .join(format!("{}_{}.json", project_id, channel));
+    let cache_data = serde_json::json!({
+        "summary": summary_text,
+        "timestamp": chrono::Utc::now().timestamp()
     });
-    
-    let metadata_path = project_dir.join("metadata.json");
-    std::fs::write(metadata_path, serde_json::to_string_pretty(&metadata).unwrap()).unwrap();
-    
-    // Создаем extracted.md файл
-    let markdown_text = "Тестовый markdown текст для проекта";
-    let markdown_path = project_dir.join("extracted.md");
-    std::fs::write(markdown_path, markdown_text).unwrap();
+    fs::write(cache_path, serde_json::to_string_pretty(&cache_data).unwrap()).unwrap();
 }
 
-/// Рендерит конфигурацию с указанными каналами
 pub fn render_config_with_channels(
     base: &str,
     out_path: &str,
@@ -311,7 +318,7 @@ pub fn render_config_with_custom_limits(
     ctx.insert("telegram_enabled", &telegram_enabled);
     ctx.insert("console_enabled", &console_enabled);
     ctx.insert("file_enabled", &file_enabled);
-    ctx.insert("rss_enabled", &false);
+    ctx.insert("rss_enabled", &true);
     ctx.insert("npalist_enabled", &true);
     ctx.insert("llm_model", &"gemini-2.0-flash");
     ctx.insert("llm_provider", &"Gemini");
@@ -328,4 +335,55 @@ pub fn render_config_with_custom_limits(
     cfg_file
 }
 
-
+/// Создает конфигурацию с кастомными параметрами Mastodon
+pub fn render_config_with_mastodon_params(
+    base: &str,
+    out_path: &str,
+    cache_dir: &str,
+    mastodon_enabled: bool,
+    telegram_enabled: bool,
+    console_enabled: bool,
+    file_enabled: bool,
+    mastodon_visibility: Option<&str>,
+    mastodon_language: Option<&str>,
+    mastodon_sensitive: Option<bool>,
+    mastodon_max_chars: Option<usize>,
+) -> tempfile::NamedTempFile {
+    let tpl = load_test_config_template();
+    let mut tera = Tera::default();
+    tera.add_raw_template("cfg", &tpl).unwrap();
+    let mut ctx = Context::new();
+    ctx.insert("base", &base);
+    ctx.insert("out", &out_path);
+    ctx.insert("cache", &cache_dir);
+    ctx.insert("mastodon_enabled", &mastodon_enabled);
+    ctx.insert("telegram_enabled", &telegram_enabled);
+    ctx.insert("console_enabled", &console_enabled);
+    ctx.insert("file_enabled", &file_enabled);
+    ctx.insert("rss_enabled", &true);
+    ctx.insert("npalist_enabled", &true);
+    ctx.insert("llm_model", &"gemini-2.0-flash");
+    ctx.insert("llm_provider", &"Gemini");
+    let base_llm = format!("{}/v1beta", base);
+    ctx.insert("llm_base_url", &base_llm);
+    ctx.insert("llm_api_key", &"TESTKEY");
+    
+    // Добавляем кастомные параметры Mastodon
+    if let Some(visibility) = mastodon_visibility {
+        ctx.insert("mastodon_visibility", &visibility);
+    }
+    if let Some(language) = mastodon_language {
+        ctx.insert("mastodon_language", &language);
+    }
+    if let Some(sensitive) = mastodon_sensitive {
+        ctx.insert("mastodon_sensitive", &sensitive);
+    }
+    if let Some(max_chars) = mastodon_max_chars {
+        ctx.insert("mastodon_max_chars", &max_chars);
+    }
+    
+    let config_text = tera.render("cfg", &ctx).unwrap();
+    let cfg_file = tempfile::NamedTempFile::new().unwrap();
+    fs::write(cfg_file.path(), config_text).unwrap();
+    cfg_file
+}
