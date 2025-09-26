@@ -2,6 +2,8 @@ use luminis::run_with_config_path;
 use serial_test::serial;
 use wiremock::MockServer;
 use urlencoding::decode;
+use assert_fs::fixture::PathChild;
+use pretty_assertions::assert_eq;
 
 mod common;
 
@@ -11,6 +13,7 @@ use crate::common::{
 };
 
 /// Проверяет содержимое Mastodon поста с декодированием URL-encoded данных
+#[allow(dead_code)]
 fn assert_mastodon_post_content(body: &[u8]) {
     let body_str = String::from_utf8_lossy(body);
     
@@ -21,16 +24,16 @@ fn assert_mastodon_post_content(body: &[u8]) {
     println!("Mastodon decoded body: {}", decoded_body);
     
     // Проверяем декодированное содержимое
-    assert!(decoded_body.contains("regulation.gov.ru/projects/160532"), "Mastodon post should contain URL");
-    assert!(decoded_body.contains("Поправки"), "Mastodon post should contain summary");
-    assert!(decoded_body.contains("Рейтинг"), "Mastodon post should contain rating");
-    assert!(decoded_body.contains("Метаданные"), "Mastodon post should contain metadata");
+    assert_eq!(decoded_body.contains("regulation.gov.ru/projects/160532"), true, "Mastodon post should contain URL");
+    assert_eq!(decoded_body.contains("Поправки"), true, "Mastodon post should contain summary");
+    assert_eq!(decoded_body.contains("Рейтинг"), true, "Mastodon post should contain rating");
+    assert_eq!(decoded_body.contains("Метаданные"), true, "Mastodon post should contain metadata");
     
     // Проверяем конкретный текст из ответа Gemini (используем декодированную строку)
     // Mastodon использует лимит 495 символов, поэтому текст отличается от других каналов
-    assert!(decoded_body.contains("Поправки+в+закон+об+ОМС"), "Mastodon post should contain Gemini summary text");
-    assert!(decoded_body.contains("Губернаторы+смогут+передавать"), "Mastodon post should contain Gemini text about governors");
-    assert!(decoded_body.contains("Полезность:+5/10"), "Mastodon post should contain Gemini rating");
+    assert_eq!(decoded_body.contains("Поправки+в+закон+об+ОМС"), true, "Mastodon post should contain Gemini summary text");
+    assert_eq!(decoded_body.contains("Губернаторы+смогут+передавать"), true, "Mastodon post should contain Gemini text about governors");
+    assert_eq!(decoded_body.contains("Полезность:+5/10"), true, "Mastodon post should contain Gemini rating");
 }
 
 #[tokio::test]
@@ -38,7 +41,7 @@ fn assert_mastodon_post_content(body: &[u8]) {
 async fn test_mastodon_visibility_public() {
     let server = MockServer::start().await;
     let base = server.uri();
-    let (_rss_xml, stages_json) = read_mocks();
+    let stages_json = read_mocks();
 
     // Setup mocks
     mount_npalist(&server).await;
@@ -51,8 +54,9 @@ async fn test_mastodon_visibility_public() {
     mount_mastodon_with_params_check(&server, Some("public"), None, None).await;
 
     // Setup config with public visibility
-    let tf = tempfile::NamedTempFile::new().unwrap();
-    let cache = tempfile::tempdir().unwrap();
+    let temp_dir = assert_fs::TempDir::new().unwrap();
+    let tf = temp_dir.child("output.txt");
+    let cache = temp_dir.child("cache");
     
     let cfg_file = render_config_with_mastodon_params(
         &base,
@@ -82,7 +86,7 @@ async fn test_mastodon_visibility_public() {
 async fn test_mastodon_visibility_private() {
     let server = MockServer::start().await;
     let base = server.uri();
-    let (_rss_xml, stages_json) = read_mocks();
+    let stages_json = read_mocks();
 
     // Setup mocks
     mount_npalist(&server).await;
@@ -96,7 +100,8 @@ async fn test_mastodon_visibility_private() {
 
     // Setup config with private visibility
     let tf = tempfile::NamedTempFile::new().unwrap();
-    let cache = tempfile::tempdir().unwrap();
+    let temp_dir = assert_fs::TempDir::new().unwrap();
+    let cache = temp_dir.child("cache");
     
     let cfg_file = render_config_with_mastodon_params(
         &base,
@@ -126,7 +131,7 @@ async fn test_mastodon_visibility_private() {
 async fn test_mastodon_language_en() {
     let server = MockServer::start().await;
     let base = server.uri();
-    let (_rss_xml, stages_json) = read_mocks();
+    let stages_json = read_mocks();
 
     // Setup mocks
     mount_npalist(&server).await;
@@ -140,7 +145,8 @@ async fn test_mastodon_language_en() {
 
     // Setup config with English language
     let tf = tempfile::NamedTempFile::new().unwrap();
-    let cache = tempfile::tempdir().unwrap();
+    let temp_dir = assert_fs::TempDir::new().unwrap();
+    let cache = temp_dir.child("cache");
     
     let cfg_file = render_config_with_mastodon_params(
         &base,
@@ -170,7 +176,7 @@ async fn test_mastodon_language_en() {
 async fn test_mastodon_sensitive_true() {
     let server = MockServer::start().await;
     let base = server.uri();
-    let (_rss_xml, stages_json) = read_mocks();
+    let stages_json = read_mocks();
 
     // Setup mocks
     mount_npalist(&server).await;
@@ -184,7 +190,8 @@ async fn test_mastodon_sensitive_true() {
 
     // Setup config with sensitive content
     let tf = tempfile::NamedTempFile::new().unwrap();
-    let cache = tempfile::tempdir().unwrap();
+    let temp_dir = assert_fs::TempDir::new().unwrap();
+    let cache = temp_dir.child("cache");
     
     let cfg_file = render_config_with_mastodon_params(
         &base,
@@ -214,7 +221,7 @@ async fn test_mastodon_sensitive_true() {
 async fn test_mastodon_sensitive_false() {
     let server = MockServer::start().await;
     let base = server.uri();
-    let (_rss_xml, stages_json) = read_mocks();
+    let stages_json = read_mocks();
 
     // Setup mocks
     mount_npalist(&server).await;
@@ -228,7 +235,8 @@ async fn test_mastodon_sensitive_false() {
 
     // Setup config with non-sensitive content
     let tf = tempfile::NamedTempFile::new().unwrap();
-    let cache = tempfile::tempdir().unwrap();
+    let temp_dir = assert_fs::TempDir::new().unwrap();
+    let cache = temp_dir.child("cache");
     
     let cfg_file = render_config_with_mastodon_params(
         &base,
@@ -258,7 +266,7 @@ async fn test_mastodon_sensitive_false() {
 async fn test_mastodon_max_chars_custom() {
     let server = MockServer::start().await;
     let base = server.uri();
-    let (_rss_xml, stages_json) = read_mocks();
+    let stages_json = read_mocks();
 
     // Setup mocks
     mount_npalist(&server).await;
@@ -272,7 +280,8 @@ async fn test_mastodon_max_chars_custom() {
 
     // Setup config with custom max_chars
     let tf = tempfile::NamedTempFile::new().unwrap();
-    let cache = tempfile::tempdir().unwrap();
+    let temp_dir = assert_fs::TempDir::new().unwrap();
+    let cache = temp_dir.child("cache");
     
     let cfg_file = render_config_with_mastodon_params(
         &base,
@@ -302,7 +311,7 @@ async fn test_mastodon_max_chars_custom() {
 async fn test_mastodon_language_de() {
     let server = MockServer::start().await;
     let base = server.uri();
-    let (_rss_xml, stages_json) = read_mocks();
+    let stages_json = read_mocks();
 
     // Setup mocks
     mount_npalist(&server).await;
@@ -316,7 +325,8 @@ async fn test_mastodon_language_de() {
 
     // Setup config with German language
     let tf = tempfile::NamedTempFile::new().unwrap();
-    let cache = tempfile::tempdir().unwrap();
+    let temp_dir = assert_fs::TempDir::new().unwrap();
+    let cache = temp_dir.child("cache");
     
     let cfg_file = render_config_with_mastodon_params(
         &base,
@@ -346,7 +356,7 @@ async fn test_mastodon_language_de() {
 async fn test_mastodon_multiple_params() {
     let server = MockServer::start().await;
     let base = server.uri();
-    let (_rss_xml, stages_json) = read_mocks();
+    let stages_json = read_mocks();
 
     // Setup mocks
     mount_npalist(&server).await;
@@ -360,7 +370,8 @@ async fn test_mastodon_multiple_params() {
 
     // Setup config with multiple custom parameters
     let tf = tempfile::NamedTempFile::new().unwrap();
-    let cache = tempfile::tempdir().unwrap();
+    let temp_dir = assert_fs::TempDir::new().unwrap();
+    let cache = temp_dir.child("cache");
     
     let cfg_file = render_config_with_mastodon_params(
         &base,

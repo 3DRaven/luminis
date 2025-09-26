@@ -19,8 +19,6 @@ pub enum PublisherChannel {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, EnumString, IntoStaticStr, AsRefStr, Serialize, Deserialize)]
 #[strum(serialize_all = "lowercase")]
 pub enum CrawlerChannel {
-    /// RSS канал
-    Rss,
     /// NPAList канал
     Npalist,
 }
@@ -67,7 +65,6 @@ impl CrawlerChannel {
     /// Получает все доступные каналы краулинга
     pub fn all() -> Vec<CrawlerChannel> {
         vec![
-            CrawlerChannel::Rss,
             CrawlerChannel::Npalist,
         ]
     }
@@ -117,27 +114,23 @@ mod tests {
 
     #[test]
     fn test_crawler_channel_string_conversion() {
-        assert_eq!(CrawlerChannel::Rss.as_str(), "rss");
         assert_eq!(CrawlerChannel::Npalist.as_str(), "npalist");
     }
 
     #[test]
     fn test_crawler_channel_from_string() {
-        assert_eq!(CrawlerChannel::from_str("rss").unwrap(), CrawlerChannel::Rss);
         assert_eq!(CrawlerChannel::from_str("npalist").unwrap(), CrawlerChannel::Npalist);
     }
 
     #[test]
     fn test_crawler_channel_display() {
-        assert_eq!(format!("{}", CrawlerChannel::Rss), "rss");
         assert_eq!(format!("{}", CrawlerChannel::Npalist), "npalist");
     }
 
     #[test]
     fn test_crawler_channel_all() {
         let all_channels = CrawlerChannel::all();
-        assert_eq!(all_channels.len(), 2);
-        assert!(all_channels.contains(&CrawlerChannel::Rss));
+        assert_eq!(all_channels.len(), 1);
         assert!(all_channels.contains(&CrawlerChannel::Npalist));
     }
 }

@@ -1,8 +1,10 @@
 use std::sync::Arc;
+use std::time::Duration;
 
-use crate::services::crawler::CrawlItem;
-use crate::services::settings::AppConfig;
+use crate::models::types::CrawlItem;
+use crate::models::config::AppConfig;
 use crate::traits::chat_api::ChatApi;
+use backon::{ExponentialBuilder, Retryable};
 use bon::Builder;
 use tera::{Context, Tera};
 use tracing::{debug, info, warn};
@@ -16,6 +18,8 @@ pub struct Summarizer {
     sample_percent: f32,
     template: Option<String>,
     preview_chars: Option<usize>,
+    max_retry_attempts: u64,
+    retry_delay_secs: u64,
 }
 
 impl Summarizer {
@@ -33,6 +37,9 @@ impl Summarizer {
         }
         // Настройка длины превью для логов промпта
         self.preview_chars = cfg.llm.log_prompt_preview_chars;
+        // Настройка параметров retry
+        self.max_retry_attempts = cfg.llm.max_retry_attempts.unwrap_or(3);
+        self.retry_delay_secs = cfg.llm.retry_delay_secs.unwrap_or(2);
         self
     }
 
@@ -72,40 +79,40 @@ impl Summarizer {
                 for it in &m.metadata {
                     let key = it.to_string();
                     let value = match it {
-                        crate::services::crawler::MetadataItem::Date(v) => v,
-                        crate::services::crawler::MetadataItem::PublishDate(v) => v,
-                        crate::services::crawler::MetadataItem::RegulatoryImpact(v) => v,
-                        crate::services::crawler::MetadataItem::RegulatoryImpactId(v) => v,
-                        crate::services::crawler::MetadataItem::Responsible(v) => v,
-                        crate::services::crawler::MetadataItem::Author(v) => v,
-                        crate::services::crawler::MetadataItem::Department(v) => v,
-                        crate::services::crawler::MetadataItem::DepartmentId(v) => v,
-                        crate::services::crawler::MetadataItem::Status(v) => v,
-                        crate::services::crawler::MetadataItem::StatusId(v) => v,
-                        crate::services::crawler::MetadataItem::Stage(v) => v,
-                        crate::services::crawler::MetadataItem::StageId(v) => v,
-                        crate::services::crawler::MetadataItem::Kind(v) => v,
-                        crate::services::crawler::MetadataItem::KindId(v) => v,
-                        crate::services::crawler::MetadataItem::Procedure(v) => v,
-                        crate::services::crawler::MetadataItem::ProcedureId(v) => v,
-                        crate::services::crawler::MetadataItem::ProcedureResult(v) => v,
-                        crate::services::crawler::MetadataItem::ProcedureResultId(v) => v,
-                        crate::services::crawler::MetadataItem::NextStageDuration(v) => v,
-                        crate::services::crawler::MetadataItem::ParallelStageStartDiscussion(v) => v,
-                        crate::services::crawler::MetadataItem::ParallelStageEndDiscussion(v) => v,
-                        crate::services::crawler::MetadataItem::StartDiscussion(v) => v,
-                        crate::services::crawler::MetadataItem::EndDiscussion(v) => v,
-                        crate::services::crawler::MetadataItem::Problem(v) => v,
-                        crate::services::crawler::MetadataItem::Objectives(v) => v,
-                        crate::services::crawler::MetadataItem::CirclePersons(v) => v,
-                        crate::services::crawler::MetadataItem::SocialRelations(v) => v,
-                        crate::services::crawler::MetadataItem::Rationale(v) => v,
-                        crate::services::crawler::MetadataItem::TransitionPeriod(v) => v,
-                        crate::services::crawler::MetadataItem::PlanDate(v) => v,
-                        crate::services::crawler::MetadataItem::CompliteDateAct(v) => v,
-                        crate::services::crawler::MetadataItem::CompliteNumberDepAct(v) => v,
-                        crate::services::crawler::MetadataItem::CompliteNumberRegAct(v) => v,
-                        crate::services::crawler::MetadataItem::ParallelStageFiles(v) => &v.join(", "),
+                        crate::models::types::MetadataItem::Date(v) => v,
+                        crate::models::types::MetadataItem::PublishDate(v) => v,
+                        crate::models::types::MetadataItem::RegulatoryImpact(v) => v,
+                        crate::models::types::MetadataItem::RegulatoryImpactId(v) => v,
+                        crate::models::types::MetadataItem::Responsible(v) => v,
+                        crate::models::types::MetadataItem::Author(v) => v,
+                        crate::models::types::MetadataItem::Department(v) => v,
+                        crate::models::types::MetadataItem::DepartmentId(v) => v,
+                        crate::models::types::MetadataItem::Status(v) => v,
+                        crate::models::types::MetadataItem::StatusId(v) => v,
+                        crate::models::types::MetadataItem::Stage(v) => v,
+                        crate::models::types::MetadataItem::StageId(v) => v,
+                        crate::models::types::MetadataItem::Kind(v) => v,
+                        crate::models::types::MetadataItem::KindId(v) => v,
+                        crate::models::types::MetadataItem::Procedure(v) => v,
+                        crate::models::types::MetadataItem::ProcedureId(v) => v,
+                        crate::models::types::MetadataItem::ProcedureResult(v) => v,
+                        crate::models::types::MetadataItem::ProcedureResultId(v) => v,
+                        crate::models::types::MetadataItem::NextStageDuration(v) => v,
+                        crate::models::types::MetadataItem::ParallelStageStartDiscussion(v) => v,
+                        crate::models::types::MetadataItem::ParallelStageEndDiscussion(v) => v,
+                        crate::models::types::MetadataItem::StartDiscussion(v) => v,
+                        crate::models::types::MetadataItem::EndDiscussion(v) => v,
+                        crate::models::types::MetadataItem::Problem(v) => v,
+                        crate::models::types::MetadataItem::Objectives(v) => v,
+                        crate::models::types::MetadataItem::CirclePersons(v) => v,
+                        crate::models::types::MetadataItem::SocialRelations(v) => v,
+                        crate::models::types::MetadataItem::Rationale(v) => v,
+                        crate::models::types::MetadataItem::TransitionPeriod(v) => v,
+                        crate::models::types::MetadataItem::PlanDate(v) => v,
+                        crate::models::types::MetadataItem::CompliteDateAct(v) => v,
+                        crate::models::types::MetadataItem::CompliteNumberDepAct(v) => v,
+                        crate::models::types::MetadataItem::CompliteNumberRegAct(v) => v,
+                        crate::models::types::MetadataItem::ParallelStageFiles(v) => &v.join(", "),
                     };
                     ctx.insert(&key, value);
                 }
@@ -127,6 +134,41 @@ impl Summarizer {
         }
     }
 
+    /// Выполняет вызов AI API с retry логикой для обработки ошибок перегрузки
+    async fn call_chat_api_with_retry(&self, prompt: &str) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
+        let fetch_data = || async {
+            self.chat_api.call_chat_api(prompt).await
+        };
+
+        // Настраиваем retry стратегию
+        let mut builder = ExponentialBuilder::default();
+        if self.max_retry_attempts > 0 {
+            builder = builder.with_max_times(self.max_retry_attempts as usize);
+        }
+        builder = builder.with_min_delay(Duration::from_secs(self.retry_delay_secs));
+
+        fetch_data
+            .retry(builder)
+            .sleep(tokio::time::sleep)
+            .when(|e: &Box<dyn std::error::Error + Send + Sync>| {
+                let error_str = e.to_string();
+                // Повторяем попытку при ошибках перегрузки сервера
+                error_str.contains("503") || 
+                error_str.contains("overloaded") || 
+                error_str.contains("UNAVAILABLE") ||
+                error_str.contains("429") ||
+                error_str.contains("rate limit") ||
+                error_str.contains("Network error")
+            })
+            .notify(|err: &Box<dyn std::error::Error + Send + Sync>, dur: Duration| {
+                info!(
+                    "Retrying AI API call after {:?} due to error: {}",
+                    dur, err
+                );
+            })
+            .await
+    }
+
     pub async fn summarize(
         &self,
         title: &str,
@@ -143,7 +185,7 @@ impl Summarizer {
         let prompt = self.build_prompt(title, body_text, source_url, meta.as_ref(), None);
         debug!(prompt_len = prompt.len(), "summarize: prompt built");
         info!("summarize: calling chat api");
-        let text = self.chat_api.call_chat_api(&prompt).await?;
+        let text = self.call_chat_api_with_retry(&prompt).await?;
         info!(generated_len = text.len(), "summarize: chat api returned");
         info!(final_len = text.len(), "summarize: done");
         Ok(text)
@@ -161,7 +203,7 @@ impl Summarizer {
         let prompt = self.build_prompt(title, body_text, source_url, meta.as_ref(), model_limit);
         debug!(prompt_len = prompt.len(), "summarize: prompt built");
         info!("summarize: calling chat api");
-        let text = self.chat_api.call_chat_api(&prompt).await?;
+        let text = self.call_chat_api_with_retry(&prompt).await?;
         info!(generated_len = text.len(), "summarize: chat api returned");
         info!(final_len = text.len(), "summarize: done");
         Ok(text)

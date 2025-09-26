@@ -13,30 +13,78 @@ fn load_test_config_template() -> String {
 }
 
 /// Загружает моки для тестов
-pub fn read_mocks() -> (String, String) {
-    let rss_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/resources/mocks/rss.xml");
+pub fn read_mocks() -> String {
     let stages_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/resources/mocks/stages.json");
     
-    let rss_xml = fs::read_to_string(rss_path).unwrap();
     let stages_json = fs::read_to_string(stages_path).unwrap();
     
-    (rss_xml, stages_json)
+    stages_json
 }
 
-pub async fn mount_rss(server: &MockServer, rss_xml: &str) {
+
+#[allow(dead_code)]
+pub async fn mount_npalist_offset0(server: &MockServer) {
+    let npalist_xml = fs::read_to_string(
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/resources/mocks/npalist.xml"),
+    )
+    .unwrap();
     let mock = Mock::given(method("GET"))
-        .and(path("/api/public/Rss"))
-        .respond_with(ResponseTemplate::new(200).set_body_string(rss_xml));
+        .and(path_regex(r"/api/npalist/"))
+        .and(query_param("limit", "50"))
+        .and(query_param("offset", "0"))
+        .and(query_param("sort", "desc"))
+        .respond_with(ResponseTemplate::new(200).set_body_string(npalist_xml));
     server.register(mock).await;
 }
 
-pub async fn mount_rss_with_error(server: &MockServer) {
+#[allow(dead_code)]
+pub async fn mount_npalist_offset50(server: &MockServer) {
+    let npalist_xml = fs::read_to_string(
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/resources/mocks/npalist_offset50.xml"),
+    )
+    .unwrap();
     let mock = Mock::given(method("GET"))
-        .and(path("/api/public/Rss"))
-        .respond_with(ResponseTemplate::new(500).set_body_string("Internal Server Error"));
+        .and(path_regex(r"/api/npalist/"))
+        .and(query_param("limit", "50"))
+        .and(query_param("offset", "50"))
+        .and(query_param("sort", "desc"))
+        .respond_with(ResponseTemplate::new(200).set_body_string(npalist_xml));
     server.register(mock).await;
 }
 
+#[allow(dead_code)]
+pub async fn mount_npalist_offset58(server: &MockServer) {
+    let npalist_xml = fs::read_to_string(
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/resources/mocks/npalist_offset58.xml"),
+    )
+    .unwrap();
+    let mock = Mock::given(method("GET"))
+        .and(path_regex(r"/api/npalist/"))
+        .and(query_param("limit", "50"))
+        .and(query_param("offset", "58"))
+        .and(query_param("sort", "desc"))
+        .respond_with(ResponseTemplate::new(200).set_body_string(npalist_xml));
+    server.register(mock).await;
+}
+
+
+#[allow(dead_code)]
+pub async fn mount_npalist_offset63(server: &MockServer) {
+    let npalist_xml = fs::read_to_string(
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/resources/mocks/npalist_offset63.xml"),
+    )
+    .unwrap();
+    let mock = Mock::given(method("GET"))
+        .and(path_regex(r"/api/npalist/"))
+        .and(query_param("limit", "50"))
+        .and(query_param("offset", "63"))
+        .and(query_param("sort", "desc"))
+        .respond_with(ResponseTemplate::new(200).set_body_string(npalist_xml));
+    server.register(mock).await;
+}
+
+
+#[allow(dead_code)]
 pub async fn mount_npalist(server: &MockServer) {
     let npalist_xml = fs::read_to_string(
         PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/resources/mocks/npalist.xml"),
@@ -51,6 +99,7 @@ pub async fn mount_npalist(server: &MockServer) {
     server.register(mock).await;
 }
 
+#[allow(dead_code)]
 pub async fn mount_npalist_with_error(server: &MockServer) {
     let mock = Mock::given(method("GET"))
         .and(path_regex(r"/api/npalist/"))
@@ -82,6 +131,7 @@ pub async fn mount_docx(server: &MockServer) {
     server.register(mock).await;
 }
 
+#[allow(dead_code)]
 pub async fn mount_gemini_generate(server: &MockServer) {
     let response_body = fs::read_to_string(
         PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(
@@ -99,6 +149,7 @@ pub async fn mount_gemini_generate(server: &MockServer) {
     server.register(mock).await;
 }
 
+#[allow(dead_code)]
 pub async fn mount_mastodon(server: &MockServer) {
     let mstd_json = fs::read_to_string(
         PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/resources/mocks/mastodon_status.json"),
@@ -110,40 +161,9 @@ pub async fn mount_mastodon(server: &MockServer) {
     server.register(mock).await;
 }
 
-/// Мок для регистрации приложения в Mastodon
-pub async fn mount_mastodon_app_registration(server: &MockServer) {
-    let app_response = r#"{
-        "id": "123456789",
-        "name": "luminis",
-        "website": null,
-        "redirect_uri": "urn:ietf:wg:oauth:2.0:oob",
-        "client_id": "test_client_id",
-        "client_secret": "test_client_secret",
-        "vapid_key": null
-    }"#;
-    
-    let mock = Mock::given(method("POST"))
-        .and(path("/api/v1/apps"))
-        .respond_with(ResponseTemplate::new(200).set_body_string(app_response));
-    server.register(mock).await;
-}
-
-/// Мок для получения токена доступа после авторизации
-pub async fn mount_mastodon_token_exchange(server: &MockServer) {
-    let token_response = r#"{
-        "access_token": "test_access_token_12345",
-        "token_type": "Bearer",
-        "scope": "read write follow push",
-        "created_at": 1640995200
-    }"#;
-    
-    let mock = Mock::given(method("POST"))
-        .and(path("/oauth/token"))
-        .respond_with(ResponseTemplate::new(200).set_body_string(token_response));
-    server.register(mock).await;
-}
 
 /// Создает мок Mastodon с проверкой конкретных параметров запроса
+#[allow(dead_code)]
 pub async fn mount_mastodon_with_params_check(
     server: &MockServer,
     expected_visibility: Option<&str>,
@@ -180,6 +200,7 @@ pub async fn mount_telegram(server: &MockServer) {
     server.register(mock).await;
 }
 
+#[allow(dead_code)]
 pub fn render_config(
     base: &str,
     out_path: &str,
@@ -188,7 +209,6 @@ pub fn render_config(
     telegram_enabled: bool,
     console_enabled: bool,
     file_enabled: bool,
-    rss_enabled: bool,
     npalist_enabled: bool,
 ) -> tempfile::NamedTempFile {
     let tpl = load_test_config_template();
@@ -202,7 +222,6 @@ pub fn render_config(
     ctx.insert("telegram_enabled", &telegram_enabled);
     ctx.insert("console_enabled", &console_enabled);
     ctx.insert("file_enabled", &file_enabled);
-    ctx.insert("rss_enabled", &rss_enabled);
     ctx.insert("npalist_enabled", &npalist_enabled);
     ctx.insert("llm_model", &"gemini-2.0-flash");
     ctx.insert("llm_provider", &"Gemini");
@@ -215,6 +234,7 @@ pub fn render_config(
     cfg_file
 }
 
+#[allow(dead_code)]
 pub fn render_config_with_retry_limit(
     base: &str,
     out_path: &str,
@@ -223,7 +243,6 @@ pub fn render_config_with_retry_limit(
     telegram_enabled: bool,
     console_enabled: bool,
     file_enabled: bool,
-    rss_enabled: bool,
     npalist_enabled: bool,
     max_retry_attempts: u64,
 ) -> tempfile::NamedTempFile {
@@ -238,7 +257,6 @@ pub fn render_config_with_retry_limit(
     ctx.insert("telegram_enabled", &telegram_enabled);
     ctx.insert("console_enabled", &console_enabled);
     ctx.insert("file_enabled", &file_enabled);
-    ctx.insert("rss_enabled", &rss_enabled);
     ctx.insert("npalist_enabled", &npalist_enabled);
     ctx.insert("llm_model", &"gemini-2.0-flash");
     ctx.insert("llm_provider", &"Gemini");
@@ -252,15 +270,31 @@ pub fn render_config_with_retry_limit(
     cfg_file
 }
 
+#[allow(dead_code)]
 pub fn prepopulate_cache(cache_dir: &str, project_id: &str, summary_text: &str) {
-    let cache_path = PathBuf::from(cache_dir).join(format!("{}.json", project_id));
-    let cache_data = serde_json::json!({
-        "summary": summary_text,
-        "timestamp": chrono::Utc::now().timestamp()
+    // Создаем директорию проекта
+    let project_dir = PathBuf::from(cache_dir).join(project_id);
+    fs::create_dir_all(&project_dir).unwrap();
+    
+    // Создаем файл extracted.md (это то, что проверяет has_data)
+    let extracted_path = project_dir.join("extracted.md");
+    fs::write(&extracted_path, "Тестовый markdown контент").unwrap();
+    
+    // Создаем файл summary.txt
+    let summary_path = project_dir.join("summary.txt");
+    fs::write(&summary_path, summary_text).unwrap();
+    
+    // Создаем metadata.json
+    let metadata_path = project_dir.join("metadata.json");
+    let metadata = serde_json::json!({
+        "summary_path": "summary.txt",
+        "published_channels": [],
+        "channel_summaries": {}
     });
-    fs::write(cache_path, serde_json::to_string_pretty(&cache_data).unwrap()).unwrap();
+    fs::write(&metadata_path, serde_json::to_string_pretty(&metadata).unwrap()).unwrap();
 }
 
+#[allow(dead_code)]
 pub async fn mount_gemini_generate_with_limit(server: &MockServer, _limit: usize) {
     let response_body = fs::read_to_string(
         PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(
@@ -278,6 +312,7 @@ pub async fn mount_gemini_generate_with_limit(server: &MockServer, _limit: usize
     server.register(mock).await;
 }
 
+#[allow(dead_code)]
 pub fn prepopulate_channel_cache(
     cache_dir: &str,
     project_id: &str,
@@ -293,6 +328,7 @@ pub fn prepopulate_channel_cache(
     fs::write(cache_path, serde_json::to_string_pretty(&cache_data).unwrap()).unwrap();
 }
 
+#[allow(dead_code)]
 pub fn render_config_with_channels(
     base: &str,
     out_path: &str,
@@ -313,7 +349,6 @@ pub fn render_config_with_channels(
     ctx.insert("telegram_enabled", &telegram_enabled);
     ctx.insert("console_enabled", &console_enabled);
     ctx.insert("file_enabled", &file_enabled);
-    ctx.insert("rss_enabled", &false);
     ctx.insert("npalist_enabled", &true);
     ctx.insert("llm_model", &"gemini-2.0-flash");
     ctx.insert("llm_provider", &"Gemini");
@@ -327,6 +362,7 @@ pub fn render_config_with_channels(
 }
 
 /// Рендерит конфигурацию с кастомными лимитами символов
+#[allow(dead_code)]
 pub fn render_config_with_custom_limits(
     base: &str,
     out_path: &str,
@@ -351,7 +387,6 @@ pub fn render_config_with_custom_limits(
     ctx.insert("telegram_enabled", &telegram_enabled);
     ctx.insert("console_enabled", &console_enabled);
     ctx.insert("file_enabled", &file_enabled);
-    ctx.insert("rss_enabled", &true);
     ctx.insert("npalist_enabled", &true);
     ctx.insert("llm_model", &"gemini-2.0-flash");
     ctx.insert("llm_provider", &"Gemini");
@@ -369,6 +404,7 @@ pub fn render_config_with_custom_limits(
 }
 
 /// Создает конфигурацию с кастомными параметрами Mastodon
+#[allow(dead_code)]
 pub fn render_config_with_mastodon_params(
     base: &str,
     out_path: &str,
@@ -393,7 +429,6 @@ pub fn render_config_with_mastodon_params(
     ctx.insert("telegram_enabled", &telegram_enabled);
     ctx.insert("console_enabled", &console_enabled);
     ctx.insert("file_enabled", &file_enabled);
-    ctx.insert("rss_enabled", &true);
     ctx.insert("npalist_enabled", &true);
     ctx.insert("llm_model", &"gemini-2.0-flash");
     ctx.insert("llm_provider", &"Gemini");

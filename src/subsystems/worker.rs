@@ -6,12 +6,12 @@ use tokio_graceful_shutdown::{FutureExt, SubsystemHandle};
 use tokio_graceful_shutdown::errors::CancelledByShutdown;
 use tracing::info;
 
-use crate::services::crawler::CrawlItem;
+use crate::models::types::CrawlItem;
 use crate::services::summarizer::Summarizer;
 use crate::services::worker::Worker;
 use crate::traits::cache_manager::CacheManager;
 use crate::traits::telegram_api::TelegramApi;
-use crate::services::settings::AppConfig;
+use crate::models::config::AppConfig;
 
 #[derive(Builder)]
 pub struct WorkerSubsystem {
@@ -20,7 +20,7 @@ pub struct WorkerSubsystem {
     pub(crate) telegram_api: Option<Arc<dyn TelegramApi>>,
     pub(crate) target_chat_id: Option<i64>,
     pub(crate) cache_manager: Arc<dyn CacheManager>,
-    pub(crate) receiver: mpsc::Receiver<Vec<CrawlItem>>,
+    pub(crate) receiver: mpsc::Receiver<CrawlItem>,
 }
 
 impl WorkerSubsystem {
@@ -49,9 +49,9 @@ impl WorkerSubsystem {
             loop {
                 // Ожидаем сообщения из канала без таймаутов
                 match rx.recv().await {
-                    Some(items) => {
-                        info!("received {} items from npa crawler", items.len());
-                        let count = worker.process_items(items).await?;
+                    Some(item) => {
+                        info!("received item from npa crawler: {}", item.title);
+                        let count = worker.process_item(item).await?;
                         published_count += count;
                         
                         // Если задан лимит постов, завершаем после обработки

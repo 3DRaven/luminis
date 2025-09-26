@@ -1,17 +1,19 @@
-use luminis::run_with_config_path;
+use luminis::{models::config::LlmConfig, run_with_config_path};
 use luminis::services::documents::DocxMarkdownFetcher;
 use luminis::traits::chat_api::ChatApi;
 use luminis::traits::markdown_fetcher::MarkdownFetcher;
 use serial_test::serial;
 use wiremock::MockServer;
-use std::fs;
+use assert_fs::prelude::*;
+use predicates::prelude::*;
 use wiremock::http::Method;
 use urlencoding::decode;
+use pretty_assertions::assert_eq;
 
 mod common;
 
 use common::{
-    mount_docx, mount_gemini_generate, mount_mastodon, mount_npalist, mount_rss, mount_stages,
+    mount_docx, mount_gemini_generate, mount_mastodon, mount_npalist, mount_stages,
     mount_telegram, read_mocks, render_config,
 };
 
@@ -21,10 +23,9 @@ use common::{
 async fn publish_all_publishers_from_both_sources_without_cache() {
     let server = MockServer::start().await;
     let base = server.uri();
-    let (rss_xml, stages_json) = read_mocks();
+    let stages_json = read_mocks();
 
-    // Setup mocks for this scenario: RSS + NPAList + Stages + DOCX + Gemini + Telegram + Mastodon
-    mount_rss(&server, &rss_xml).await;
+    // Setup mocks for this scenario: NPAList + Stages + DOCX + Gemini + Telegram + Mastodon
     mount_npalist(&server).await;
     mount_stages(&server, &stages_json).await;
     mount_docx(&server).await;
@@ -33,29 +34,25 @@ async fn publish_all_publishers_from_both_sources_without_cache() {
     mount_mastodon(&server).await;
 
     // Setup config without cache
-    let tf = tempfile::NamedTempFile::new().unwrap();
-    let cache = tempfile::tempdir().unwrap();
+    let temp_dir = assert_fs::TempDir::new().unwrap();
+    let output_file = temp_dir.child("output.txt");
+    let cache = temp_dir.child("cache");
 
     let cfg_file = render_config(
         &base,
-        tf.path().to_str().unwrap(),
+        output_file.path().to_str().unwrap(),
         cache.path().to_str().unwrap(),
         true, // mastodon_enabled
         true, // telegram_enabled
         true, // console_enabled
         true, // file_enabled
-        true, // rss_enabled
         true, // npalist_enabled
     );
 
     let _ = run_with_config_path(cfg_file.path().to_str().unwrap(), None)
         .await
         .unwrap();
-    let out = fs::read_to_string(tf.path()).unwrap();
-    assert!(
-        !out.trim().is_empty(),
-        "output file must contain published post"
-    );
+    output_file.assert(predicate::str::is_empty().not());
     
     // Проверка полного содержимого файла
     let expected_content = "https://regulation.gov.ru/projects/160532
@@ -66,10 +63,10 @@ async fn publish_all_publishers_from_both_sources_without_cache() {
 Репрессивность: 2/10 (незначительно)
 Коррупц. емкость: 6/10 (регион. перераспределение)
 
-Метаданные: [Деп:Минздрав России; Отв:Филиппов Олег Анатольевич]
+Метаданные: [Дата:2025-09-20; Деп:Минздрав России; Отв:Филиппов Олег Анатольевич]
 
 ";
-    assert_eq!(out, expected_content, "File content should match expected output");
+    output_file.assert(expected_content);
 
     // Детальная проверка публикации в Telegram и Mastodon
     let received_requests = server.received_requests().await.unwrap();
@@ -87,10 +84,10 @@ async fn publish_all_publishers_from_both_sources_without_cache() {
     
     // Проверяем содержимое поста в Telegram
     let telegram_body_str = String::from_utf8_lossy(&telegram_request.body);
-    assert!(telegram_body_str.contains("https://regulation.gov.ru/projects/160532"), "Telegram post should contain URL");
-    assert!(telegram_body_str.contains("Поправки в закон об ОМС"), "Telegram post should contain summary");
-    assert!(telegram_body_str.contains("Рейтинг:"), "Telegram post should contain rating");
-    assert!(telegram_body_str.contains("Метаданные:"), "Telegram post should contain metadata");
+    assert_eq!(telegram_body_str.contains("https://regulation.gov.ru/projects/160532"), true, "Telegram post should contain URL");
+    assert_eq!(telegram_body_str.contains("Поправки в закон об ОМС"), true, "Telegram post should contain summary");
+    assert_eq!(telegram_body_str.contains("Рейтинг:"), true, "Telegram post should contain rating");
+    assert_eq!(telegram_body_str.contains("Метаданные:"), true, "Telegram post should contain metadata");
     
     // Проверка Mastodon
     let mastodon_requests: Vec<_> = received_requests
@@ -114,13 +111,13 @@ async fn publish_all_publishers_from_both_sources_without_cache() {
     
     // Проверяем конкретный текст из ответа Gemini (используем декодированную строку)
     // Mastodon использует лимит 495 символов, поэтому текст отличается от других каналов
-    assert!(decoded_body.contains("Поправки+в+закон+об+ОМС"), "Mastodon post should contain Gemini summary text");
-    assert!(decoded_body.contains("Губернаторы+смогут+передавать"), "Mastodon post should contain Gemini text about governors");
-    assert!(decoded_body.contains("Полезность:+5/10"), "Mastodon post should contain Gemini rating");
-    assert!(decoded_body.contains("regulation.gov.ru/projects/160532"), "Mastodon post should contain URL");
-    assert!(decoded_body.contains("Метаданные"), "Mastodon post should contain metadata");
+    assert_eq!(decoded_body.contains("Поправки+в+закон+об+ОМС"), true, "Mastodon post should contain Gemini summary text");
+    assert_eq!(decoded_body.contains("Губернаторы+смогут+передавать"), true, "Mastodon post should contain Gemini text about governors");
+    assert_eq!(decoded_body.contains("Полезность:+5/10"), true, "Mastodon post should contain Gemini rating");
+    assert_eq!(decoded_body.contains("regulation.gov.ru/projects/160532"), true, "Mastodon post should contain URL");
+    assert_eq!(decoded_body.contains("Метаданные"), true, "Mastodon post should contain metadata");
 
-    // Verify mocks were called (no cache). RSS может не вызываться в этом прогоне.
+    // Verify mocks were called (no cache).
     server.verify().await;
 }
 
@@ -131,7 +128,7 @@ async fn fetch_docx_via_wiremock() {
     let base = server.uri();
 
     // Setup mocks using test_utils
-    let (_rss_xml, stages_json) = read_mocks();
+    let stages_json = read_mocks();
     mount_stages(&server, &stages_json).await;
     mount_docx(&server).await;
     // Call MarkdownFetcher (Docx implementation) directly
@@ -143,12 +140,9 @@ async fn fetch_docx_via_wiremock() {
         .file_id_url_template(template)
         .build();
     let res = fetcher.fetch_markdown("160532").await.unwrap();
-    assert!(res.is_some(), "DOCX should be fetched and parsed");
+    assert_eq!(res.is_some(), true, "DOCX should be fetched and parsed");
     let (_bytes, md) = res.unwrap();
-    assert!(
-        !md.trim().is_empty(),
-        "Extracted markdown should not be empty"
-    );
+    assert_eq!(md.trim().is_empty(), false, "Extracted markdown should not be empty");
       // Verify mocks were called
       server.verify().await;
 }
@@ -165,7 +159,7 @@ async fn test_gemini_api_client() {
     mount_gemini_generate(&mut mock_server).await;
 
     // Build LocalChatApi client pointing to mock Gemini
-    let llm = luminis::services::settings::LlmConfig {
+    let llm = LlmConfig {
         model: Some("gemini-2.0-flash".to_string()),
         use_local: None,
         model_path: None,
@@ -187,6 +181,8 @@ async fn test_gemini_api_client() {
         proxy: None,
         api_key: Some("TESTKEY".to_string()),
         request_timeout_secs: Some(10),
+        max_retry_attempts: Some(3),
+        retry_delay_secs: Some(2),
         log_prompt_preview_chars: Some(40),
     };
     let api = luminis::services::chat_api_local::LocalChatApi::from_config(&llm);
@@ -194,5 +190,5 @@ async fn test_gemini_api_client() {
         .call_chat_api(prompt_text)
         .await
         .expect("gemini call ok");
-    assert!(resp.contains("Поправки в закон об ОМС"));
+    assert_eq!(resp.contains("Поправки в закон об ОМС"), true);
 }

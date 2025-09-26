@@ -8,6 +8,15 @@ use async_trait::async_trait;
 pub trait TelegramApi: Send + Sync {
     /// Sends a text message to a specified Telegram chat.
     async fn send_telegram_message(&self, chat_id: i64, text: String) -> Result<(), String>;
+    
+    /// Returns the client for this API instance
+    fn client(&self) -> &reqwest::Client;
+    
+    /// Returns the base URL for this API instance
+    fn base_url(&self) -> &str;
+    
+    /// Returns the token for this API instance
+    fn token(&self) -> &str;
 }
 
 

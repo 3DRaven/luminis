@@ -1,4 +1,4 @@
-use crate::services::settings::LlmConfig;
+use crate::models::config::LlmConfig;
 use crate::traits::chat_api::ChatApi;
 use async_trait::async_trait;
 // tracing is available if needed

@@ -7,7 +7,6 @@ sequenceDiagram
     participant App as Application
     participant Lib as lib.rs
     participant NPA as NpaListCrawlerSubsystem
-    participant RSS as RssCrawler
     participant WorkerSub as WorkerSubsystem
     participant Worker as Worker
     participant ChannelMgr as ChannelManager
@@ -36,18 +35,33 @@ sequenceDiagram
     Note over NPA: Краулер работает как подсистема по интервалу
     loop Каждые npa_interval_secs
         NPA->>NPA: try_fetch_data_with_retry()
-        NPA->>NPA: NpaListCrawler.fetch()
+        NPA->>NPA: NpaListCrawler.fetch_stream()
+        NPA->>NPA: fetch_latest_page(offset=0)
+        NPA->>NPA: parse_npa_projects()
+        
         alt Новые элементы найдены
-            NPA->>WorkerSub: send(items)
-        else Нет новых элементов
-            NPA->>NPA: log("no items")
-        else Ошибка NPA
-            NPA->>RSS: RssCrawler.fetch() (fallback)
-            alt RSS вернул элементы
-                RSS->>WorkerSub: send(items)
-            else Оба упали после ретраев
-                NPA->>NPA: request_shutdown()
+            loop Для каждого элемента
+                NPA->>CacheManager: is_fully_published()
+                alt Не полностью опубликован
+                    NPA->>WorkerSub: send(item)
+                else Полностью опубликован
+                    NPA->>NPA: skip
+                end
             end
+        else Нет новых элементов
+            NPA->>NPA: deep_dive_into_history()
+            NPA->>NPA: calculate_history_offset()
+            NPA->>NPA: fetch_history_page(offset)
+            NPA->>NPA: parse_history_projects()
+            loop Для каждого элемента истории
+                NPA->>CacheManager: is_fully_published()
+                alt Не полностью опубликован
+                    NPA->>WorkerSub: send(item)
+                else Полностью опубликован
+                    NPA->>NPA: skip
+                end
+            end
+            NPA->>CacheManager: update_min_published_project_id()
         end
     end
 
@@ -146,11 +160,10 @@ sequenceDiagram
 - **NpaListCrawler**: Читает данные с regulation.gov.ru
   - Всегда начинает с offset=0 (последние новости)
   - При отсутствии новых данных углубляется в историю
-  - Сохраняет прогресс в manifest.json
-  - При ошибках самостоятельно запускает RssCrawler как fallback
-- **RssCrawler**: Fallback источник данных
-  - Запускается NpaListCrawler при ошибках
-  - Парсит RSS фид
+  - Вычисляет точный offset для пропуска уже опубликованных страниц
+  - Сохраняет прогресс в manifest.json (min_published_project_id)
+  - Использует streaming для обработки элементов по одному
+  - Проверяет статус публикации каждого элемента перед отправкой в Worker
 
 ### Publishers
 - **Console**: Вывод в консоль
@@ -214,7 +227,7 @@ async fn worker_subsystem(subsys: SubsystemHandle) -> Result<()> {
 - **Graceful Shutdown**: Поддержка корректного завершения по Ctrl+C через tokio_graceful_shutdown
 - **Разделение ответственности**: Lib только запускает задачи, не участвует в их работе
 - **Событийно-ориентированная обработка**: Worker ждет сообщения из канала, а не работает по таймеру
-- **Отказоустойчивость**: NpaListCrawler самостоятельно запускает RssCrawler при ошибках
+- **Отказоустойчивость**: NpaListCrawler использует retry механизм при ошибках
 - **Простота**: Worker просто ждет данные из канала без таймаутов
 - **Поэтапное кэширование**: Проверка кэша на каждом этапе (данные → суммаризация → публикация)
 - **Оптимизация**: Избежание повторной обработки на любом этапе

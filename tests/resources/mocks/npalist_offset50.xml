@@ -1,0 +1,38 @@
+<projects offset="50" limit="50" sort="desc" total="119927">
+  <project id="160475">
+    <title>Об утверждении правил предоставления субсидий на поддержку малого и среднего предпринимательства</title>
+    <projectId>02/10/09-25/00160475</projectId>
+    <date>2025-09-14T14:20:30.789Z</date>
+    <stage id="20">Текст</stage>
+    <status id="20">Идет обсуждение</status>
+    <regulatoryImpact id="0">Не определена</regulatoryImpact>
+    <procedureResult id="0">Не определено</procedureResult>
+    <publishDate>2025-09-14T14:25:45.123Z</publishDate>
+    <kind id="16">Проект ведомственного акта</kind>
+    <department id="15">Минэкономразвития России</department>
+    <procedure id="5">Независимая антикоррупционная экспертиза</procedure>
+    <responsible>Сидорова Анна Владимировна</responsible>
+    <parallelStageStartDiscussion>2025-09-14T14:26:00.000Z</parallelStageStartDiscussion>
+    <parallelStageEndDiscussion>2025-09-21T14:26:00.000Z</parallelStageEndDiscussion>
+  </project>
+  <project id="160474">
+    <title>О внесении изменений в Федеральный закон «О защите прав потребителей»</title>
+    <projectId>01/05/09-25/00160474</projectId>
+    <date>2025-09-13T09:15:45.456Z</date>
+    <stage id="20">Текст</stage>
+    <status id="20">Идет обсуждение</status>
+    <regulatoryImpact id="0">Не определена</regulatoryImpact>
+    <procedureResult id="0">Не определено</procedureResult>
+    <publishDate>2025-09-13T09:20:10.789Z</publishDate>
+    <kind id="6">Проект федерального закона</kind>
+    <department id="41">ФАС России</department>
+    <procedure id="1">Раскрытие информации о подготовке проектов нормативных правовых актов</procedure>
+    <responsible>Козлов Михаил Александрович</responsible>
+    <nextStageDuration>20</nextStageDuration>
+    <discussionDays>20</discussionDays>
+    <parallelStageStartDiscussion>2025-09-13T09:21:00.000Z</parallelStageStartDiscussion>
+    <parallelStageEndDiscussion>2025-10-03T09:21:00.000Z</parallelStageEndDiscussion>
+    <startDiscussion>2025-09-13T09:20:10.800Z</startDiscussion>
+    <endDiscussion>2025-10-03T09:20:10.800Z</endDiscussion>
+  </project>
+</projects>

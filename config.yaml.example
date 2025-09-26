@@ -182,6 +182,7 @@ run:
 
     {%- set meta_str = "" -%}
     {%- set sep = "" -%}
+    {%- if publish_date -%}{% set meta_str = meta_str ~ sep ~ "Дата:" ~ publish_date | split(pat="T") | first %}{% set sep = "; " %}{% endif %}
     {%- if department -%}{% set meta_str = meta_str ~ sep ~ "Деп:" ~ department %}{% set sep = "; " %}{% endif %}
     {%- if responsible -%}{% set meta_str = meta_str ~ sep ~ "Отв:" ~ responsible %}{% set sep = "; " %}{% elif author -%}{% set meta_str = meta_str ~ sep ~ "Отв:" ~ author %}{% set sep = "; " %}{% endif %}
     Метаданные: [{{ meta_str }}]

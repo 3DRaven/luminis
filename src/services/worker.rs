@@ -4,16 +4,16 @@ use tera::{Tera, Context};
 use bon::bon;
 use reqwest::Client;
 
-use crate::services::crawler::CrawlItem;
+use crate::models::types::CrawlItem;
 use crate::services::documents::DocxMarkdownFetcher;
 use crate::traits::markdown_fetcher::MarkdownFetcher;
-use crate::services::mastodon::{MastodonPublisher, ensure_mastodon_token, load_token_from_secrets};
-use crate::services::publisher::{ConsolePublisher, FilePublisher, TelegramPublisherAdapter, MastodonPublisherAdapter};
+use crate::publishers::{ConsolePublisher, FilePublisher, MastodonPublisher, RealTelegramApi};
+use crate::publishers::mastodon::{ensure_mastodon_token, load_token_from_secrets};
 use crate::traits::publisher::Publisher;
 use crate::traits::telegram_api::TelegramApi;
 use crate::traits::cache_manager::CacheManager;
 use crate::services::summarizer::Summarizer;
-use crate::services::settings::AppConfig;
+use crate::models::config::AppConfig;
 use crate::services::channels::ChannelManager;
 use crate::models::channel::PublisherChannel;
 
@@ -78,11 +78,16 @@ impl Worker {
                         if m.login_cli.unwrap_or(false) {
                             // CLI логин разрешен, пытаемся авторизоваться
                             match ensure_mastodon_token(&m.base_url, token_path).await {
-                                Ok(token) => Some(Arc::new(MastodonPublisher::builder()
-                                    .client(Client::new())
-                                    .base_url(m.base_url.clone())
-                                    .access_token(token)
-                                    .build())),
+                                Ok(token) => Some(Arc::new(MastodonPublisher {
+                                    client: Client::new(),
+                                    base_url: m.base_url.clone(),
+                                    access_token: token,
+                                    visibility: m.visibility.clone(),
+                                    language: m.language.clone(),
+                                    spoiler_text: m.spoiler_text.clone(),
+                                    sensitive: m.sensitive.unwrap_or(false),
+                                    max_chars: m.max_chars,
+                                })),
                                 Err(e) => { 
                                     error!(error = %e, "mastodon login_cli failed"); 
                                     return Err(std::io::Error::new(
@@ -99,41 +104,21 @@ impl Worker {
                             ));
                         }
                     },
-                    Err(e) => {
+                    Err(_e) => {
                         // Проверяем, разрешен ли CLI логин
                         if m.login_cli.unwrap_or(false) {
                             // CLI логин разрешен, пытаемся авторизоваться
                             match ensure_mastodon_token(&m.base_url, token_path).await {
-                                Ok(token) => Some(Arc::new(MastodonPublisher::builder()
-                                    .client(Client::new())
-                                    .base_url(m.base_url.clone())
-                                    .access_token(token)
-                                    .build())),
-                                Err(e) => { 
-                                    error!(error = %e, "mastodon login_cli failed"); 
-                                    return Err(std::io::Error::new(
-                                        std::io::ErrorKind::PermissionDenied,
-                                        format!("Критическая ошибка: не удалось авторизоваться в Mastodon. Mastodon включен как канал публикации, но авторизация не удалась: {}", e)
-                                    ));
-                                }
-                            }
-                        } else { 
-                            // КРИТИЧЕСКАЯ ОШИБКА: Mastodon включен, но токен недоступен и CLI логин отключен
-                            return Err(std::io::Error::new(
-                                std::io::ErrorKind::InvalidInput,
-                                "Критическая ошибка: Mastodon включен как канал публикации, но токен доступа недоступен. Укажите access_token в конфигурации или установите login_cli: true для интерактивной авторизации."
-                            ));
-                        }
-                    },
-                    _ => {
-                        // 3) Интерактивная авторизация через CLI (если разрешена)
-                        if m.login_cli.unwrap_or(false) {
-                            match ensure_mastodon_token(&m.base_url, token_path).await {
-                                Ok(token) => Some(Arc::new(MastodonPublisher::builder()
-                                    .client(Client::new())
-                                    .base_url(m.base_url.clone())
-                                    .access_token(token)
-                                    .build())),
+                                Ok(token) => Some(Arc::new(MastodonPublisher {
+                                    client: Client::new(),
+                                    base_url: m.base_url.clone(),
+                                    access_token: token,
+                                    visibility: m.visibility.clone(),
+                                    language: m.language.clone(),
+                                    spoiler_text: m.spoiler_text.clone(),
+                                    sensitive: m.sensitive.unwrap_or(false),
+                                    max_chars: m.max_chars,
+                                })),
                                 Err(e) => { 
                                     error!(error = %e, "mastodon login_cli failed"); 
                                     return Err(std::io::Error::new(
@@ -170,30 +155,34 @@ impl Worker {
         })
     }
 
-    /// Обрабатывает список элементов
-    pub async fn process_items(&self, items: Vec<CrawlItem>) -> std::io::Result<usize> {
-        let max_posts_per_run: Option<usize> = self.config
-            .run
-            .as_ref()
-            .and_then(|r| r.max_posts_per_run);
+    /// Получает список включенных каналов публикации
+    pub fn get_enabled_publisher_channels(&self) -> Vec<PublisherChannel> {
+        self.channel_manager.get_enabled_channels()
+            .iter()
+            .map(|config| config.channel)
+            .collect()
+    }
+
+    /// Обрабатывает один элемент
+    pub async fn process_item(&self, item: CrawlItem) -> std::io::Result<usize> {
+        // Задержка перед обработкой элемента (для контроля скорости обработки)
+        let processing_delay_secs = self.config.run.as_ref().and_then(|r| r.processing_delay_secs).unwrap_or(120);
+        if processing_delay_secs > 0 {
+            info!(
+                secs = processing_delay_secs,
+                "worker: sleeping before processing item to control processing rate"
+            );
+            tokio::time::sleep(std::time::Duration::from_secs(processing_delay_secs)).await;
+        }
         
-        let mut published_count: usize = 0;
+        let title = if item.title.is_empty() {
+            "Обновление".to_string()
+        } else {
+            item.title.clone()
+        };
         
-        for item in items {
-            if let Some(limit) = max_posts_per_run { 
-                if published_count >= limit { 
-                    break; 
-                } 
-            }
-            
-            let title = if item.title.is_empty() {
-                "Обновление".to_string()
-            } else {
-                item.title.clone()
-            };
-            
-            let url = item.url.clone();
-            let project_id = item.project_id.clone();
+        let url = item.url.clone();
+        let project_id = item.project_id.clone();
 
             // Поэтапная проверка кэша согласно схеме
             let published_names = if let Some(pid) = project_id.as_ref() {
@@ -243,17 +232,18 @@ impl Worker {
                                 &text,
                                 "",
                                 "",
-                                &[]
+                                &[],
+                                &item.metadata
                             ).await;
                             (text, Some(bytes))
                         }
                         Ok(None) => {
                             info!(project_id = %pid, "no fileId found, skipping");
-                            continue;
+                            return Ok(0);
                         }
                         Err(e) => {
                             error!(project_id = %pid, error = %e, "failed to fetch markdown");
-                            continue;
+                            return Ok(0);
                         }
                     }
                 } else {
@@ -299,7 +289,8 @@ impl Worker {
                         &final_markdown,
                         &generated_summary,
                         "",
-                        &[]
+                        &[],
+                        &item.metadata
                     ).await;
                     
                     generated_summary
@@ -313,14 +304,10 @@ impl Worker {
                 published_names
             } else {
                 error!("project_id not found in url, skipping item");
-                continue;
+                return Ok(0);
             };
-            if !published_names.is_empty() { 
-                published_count += 1; 
-            }
-        }
         
-        Ok(published_count)
+        Ok(if !published_names.is_empty() { 1 } else { 0 })
     }
 
     /// Суммаризирует текст
@@ -365,7 +352,8 @@ impl Worker {
                         text,
                         &s,
                         "",
-                        &[]
+                        &[],
+                        &item.metadata
                     ).await;
                 }
                 Ok(s)
@@ -404,40 +392,40 @@ impl Worker {
         for m in &item.metadata {
             let key = m.to_string();
             let value = match m {
-                crate::services::crawler::MetadataItem::Date(v) => v,
-                crate::services::crawler::MetadataItem::PublishDate(v) => v,
-                crate::services::crawler::MetadataItem::RegulatoryImpact(v) => v,
-                crate::services::crawler::MetadataItem::RegulatoryImpactId(v) => v,
-                crate::services::crawler::MetadataItem::Responsible(v) => v,
-                crate::services::crawler::MetadataItem::Author(v) => v,
-                crate::services::crawler::MetadataItem::Department(v) => v,
-                crate::services::crawler::MetadataItem::DepartmentId(v) => v,
-                crate::services::crawler::MetadataItem::Status(v) => v,
-                crate::services::crawler::MetadataItem::StatusId(v) => v,
-                crate::services::crawler::MetadataItem::Stage(v) => v,
-                crate::services::crawler::MetadataItem::StageId(v) => v,
-                crate::services::crawler::MetadataItem::Kind(v) => v,
-                crate::services::crawler::MetadataItem::KindId(v) => v,
-                crate::services::crawler::MetadataItem::Procedure(v) => v,
-                crate::services::crawler::MetadataItem::ProcedureId(v) => v,
-                crate::services::crawler::MetadataItem::ProcedureResult(v) => v,
-                crate::services::crawler::MetadataItem::ProcedureResultId(v) => v,
-                crate::services::crawler::MetadataItem::NextStageDuration(v) => v,
-                crate::services::crawler::MetadataItem::ParallelStageStartDiscussion(v) => v,
-                crate::services::crawler::MetadataItem::ParallelStageEndDiscussion(v) => v,
-                crate::services::crawler::MetadataItem::StartDiscussion(v) => v,
-                crate::services::crawler::MetadataItem::EndDiscussion(v) => v,
-                crate::services::crawler::MetadataItem::Problem(v) => v,
-                crate::services::crawler::MetadataItem::Objectives(v) => v,
-                crate::services::crawler::MetadataItem::CirclePersons(v) => v,
-                crate::services::crawler::MetadataItem::SocialRelations(v) => v,
-                crate::services::crawler::MetadataItem::Rationale(v) => v,
-                crate::services::crawler::MetadataItem::TransitionPeriod(v) => v,
-                crate::services::crawler::MetadataItem::PlanDate(v) => v,
-                crate::services::crawler::MetadataItem::CompliteDateAct(v) => v,
-                crate::services::crawler::MetadataItem::CompliteNumberDepAct(v) => v,
-                crate::services::crawler::MetadataItem::CompliteNumberRegAct(v) => v,
-                crate::services::crawler::MetadataItem::ParallelStageFiles(v) => &v.join(", "),
+                crate::models::types::MetadataItem::Date(v) => v,
+                crate::models::types::MetadataItem::PublishDate(v) => v,
+                crate::models::types::MetadataItem::RegulatoryImpact(v) => v,
+                crate::models::types::MetadataItem::RegulatoryImpactId(v) => v,
+                crate::models::types::MetadataItem::Responsible(v) => v,
+                crate::models::types::MetadataItem::Author(v) => v,
+                crate::models::types::MetadataItem::Department(v) => v,
+                crate::models::types::MetadataItem::DepartmentId(v) => v,
+                crate::models::types::MetadataItem::Status(v) => v,
+                crate::models::types::MetadataItem::StatusId(v) => v,
+                crate::models::types::MetadataItem::Stage(v) => v,
+                crate::models::types::MetadataItem::StageId(v) => v,
+                crate::models::types::MetadataItem::Kind(v) => v,
+                crate::models::types::MetadataItem::KindId(v) => v,
+                crate::models::types::MetadataItem::Procedure(v) => v,
+                crate::models::types::MetadataItem::ProcedureId(v) => v,
+                crate::models::types::MetadataItem::ProcedureResult(v) => v,
+                crate::models::types::MetadataItem::ProcedureResultId(v) => v,
+                crate::models::types::MetadataItem::NextStageDuration(v) => v,
+                crate::models::types::MetadataItem::ParallelStageStartDiscussion(v) => v,
+                crate::models::types::MetadataItem::ParallelStageEndDiscussion(v) => v,
+                crate::models::types::MetadataItem::StartDiscussion(v) => v,
+                crate::models::types::MetadataItem::EndDiscussion(v) => v,
+                crate::models::types::MetadataItem::Problem(v) => v,
+                crate::models::types::MetadataItem::Objectives(v) => v,
+                crate::models::types::MetadataItem::CirclePersons(v) => v,
+                crate::models::types::MetadataItem::SocialRelations(v) => v,
+                crate::models::types::MetadataItem::Rationale(v) => v,
+                crate::models::types::MetadataItem::TransitionPeriod(v) => v,
+                crate::models::types::MetadataItem::PlanDate(v) => v,
+                crate::models::types::MetadataItem::CompliteDateAct(v) => v,
+                crate::models::types::MetadataItem::CompliteNumberDepAct(v) => v,
+                crate::models::types::MetadataItem::CompliteNumberRegAct(v) => v,
+                crate::models::types::MetadataItem::ParallelStageFiles(v) => &v.join(", "),
             };
             ctx.insert(&key, value);
         }
@@ -504,11 +492,6 @@ impl Worker {
         // Генерируем суммаризацию для конкретного канала
         let summary = self.summarize_text(title, url, markdown_text, item, Some(channel_limit)).await?;
 
-        // Сохраняем суммаризацию в кэш для этого канала
-        if let Err(e) = self.cache_manager.save_channel_summary(project_id, channel, &summary).await {
-            error!(project_id = %project_id, channel = %channel, error = %e, "failed to save channel summary to cache");
-        }
-
         Ok(summary)
     }
 
@@ -549,11 +532,6 @@ impl Worker {
 
         // Генерируем пост для конкретного канала
         let post = self.build_post(item, summary)?;
-
-        // Сохраняем пост в кэш для этого канала
-        if let Err(e) = self.cache_manager.save_channel_post(project_id, channel, &post).await {
-            error!(project_id = %project_id, channel = %channel, error = %e, "failed to save channel post to cache");
-        }
 
         Ok(post)
     }
@@ -608,7 +586,20 @@ impl Worker {
                 Ok(success) => {
                     if success {
                         published_channels.push(channel_name.to_string());
-                        info!(project_id = %project_id, channel = %channel_name, "successfully published to channel");
+                        info!(project_id = %project_id, channel = %channel_name, published_channels_so_far = ?published_channels, "successfully published to channel");
+                        
+                        // Немедленно сохраняем данные канала в metadata.json
+                        if let Err(e) = self.cache_manager.update_channel_data(
+                            project_id, 
+                            channel, 
+                            Some(&channel_summary),
+                            Some(&channel_post),
+                            true  // is_published = true
+                        ).await {
+                            error!(project_id = %project_id, channel = %channel_name, error = %e, "failed to save channel data");
+                        } else {
+                            info!(project_id = %project_id, channel = %channel_name, "immediately saved channel data to cache");
+                        }
                     } else {
                         info!(project_id = %project_id, channel = %channel_name, "publication to channel skipped");
                     }
@@ -619,17 +610,14 @@ impl Worker {
             }
         }
         
-        // Обновляем список опубликованных каналов в кэше
-        if !published_channels.is_empty() {
-            // Конвертируем строки обратно в PublisherChannel для кэша
-            let channels: Result<Vec<PublisherChannel>, _> = published_channels.iter()
-                .map(|s| PublisherChannel::from_str(s))
-                .collect();
-            
-            if let Ok(channels) = channels {
-                if let Err(e) = self.cache_manager.add_published_channels(project_id, &channels).await {
-                    error!(project_id = %project_id, error = %e, "failed to update published channels in cache");
-                }
+        info!(project_id = %project_id, final_published_channels = ?published_channels, "worker: finished processing all channels (channels saved immediately)");
+        
+        // Обновляем min_published_project_id в manifest после успешной публикации
+        if let Ok(pid_num) = project_id.parse::<u32>() {
+            if let Err(e) = self.cache_manager.update_min_published_project_id(pid_num).await {
+                error!(project_id = %project_id, error = %e, "failed to update min_published_project_id in manifest");
+            } else {
+                info!(project_id = %project_id, min_id = pid_num, "updated min_published_project_id in manifest");
             }
         }
         
@@ -646,10 +634,13 @@ impl Worker {
         match channel {
             PublisherChannel::Telegram => {
                 if let (Some(api), Some(chat_id)) = (&self.telegram_api, &self.target_chat_id) {
-                    let publisher = TelegramPublisherAdapter { 
-                        api: api.clone(), 
+                    // Создаем временный publisher с нужными параметрами
+                    let publisher = RealTelegramApi {
+                        client: api.client().clone(),
+                        base_url: api.base_url().to_string(),
+                        token: api.token().to_string(),
                         chat_id: *chat_id,
-                        max_chars: self.channel_manager.get_channel_limit(PublisherChannel::Telegram)
+                        max_chars: self.channel_manager.get_channel_limit(PublisherChannel::Telegram),
                     };
                     match publisher.publish(&item.title, &item.url, post_text).await {
                         Ok(_) => Ok(true),
@@ -665,14 +656,17 @@ impl Worker {
             }
             PublisherChannel::Mastodon => {
                 if let Some(mastodon) = &self.mastodon {
-                    let publisher = MastodonPublisherAdapter { 
-                        client: mastodon.clone(),
-                        visibility: self.config.mastodon.as_ref().and_then(|m| m.visibility.clone()),
-                        language: self.config.mastodon.as_ref().and_then(|m| m.language.clone()),
-                        spoiler_text: self.config.mastodon.as_ref().and_then(|m| m.spoiler_text.clone()),
-                        sensitive: self.config.mastodon.as_ref().and_then(|m| m.sensitive).unwrap_or(false),
-                        max_chars: self.channel_manager.get_channel_limit(PublisherChannel::Mastodon)
-                    };
+                    // Создаем временный publisher с нужными параметрами
+                    let publisher = MastodonPublisher::builder()
+                        .client(mastodon.client.clone())
+                        .base_url(mastodon.base_url.clone())
+                        .access_token(mastodon.access_token.clone())
+                        .maybe_visibility(self.config.mastodon.as_ref().and_then(|m| m.visibility.clone()))
+                        .maybe_language(self.config.mastodon.as_ref().and_then(|m| m.language.clone()))
+                        .maybe_spoiler_text(self.config.mastodon.as_ref().and_then(|m| m.spoiler_text.clone()))
+                        .sensitive(self.config.mastodon.as_ref().and_then(|m| m.sensitive).unwrap_or(false))
+                        .maybe_max_chars(self.channel_manager.get_channel_limit(PublisherChannel::Mastodon))
+                        .build();
                     match publisher.publish(&item.title, &item.url, post_text).await {
                         Ok(_) => Ok(true),
                         Err(e) => {

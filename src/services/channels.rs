@@ -1,4 +1,4 @@
-use crate::services::settings::AppConfig;
+use crate::models::config::AppConfig;
 use crate::models::channel::PublisherChannel;
 use std::collections::HashMap;
 use bon::bon;

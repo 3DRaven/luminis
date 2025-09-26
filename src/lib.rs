@@ -2,6 +2,8 @@ pub mod services;
 pub mod traits;
 pub mod subsystems;
 pub mod models;
+pub mod crawlers;
+pub mod publishers;
 
 use std::sync::Arc;
 use std::time::Duration;
@@ -10,14 +12,15 @@ use tokio_graceful_shutdown::{SubsystemBuilder, Toplevel};
 
 use crate::traits::chat_api::ChatApi;
 use crate::services::chat_api_local::LocalChatApi;
-use crate::services::settings::{AppConfig, load_config};
+use crate::models::config::AppConfig;
+use crate::services::settings::load_config;
 use crate::services::summarizer::Summarizer;
 use crate::traits::telegram_api::TelegramApi;
-use crate::services::telegram_api_impl::RealTelegramApi;
+use crate::publishers::RealTelegramApi;
 use reqwest::Client;
 use crate::traits::cache_manager::CacheManager;
 use crate::services::cache_manager_impl::FileSystemCacheManager;
-use crate::subsystems::npalistcrawler::NpaListCrawlerSubsystem;
+use crate::subsystems::scanner::ScannerSubsystem;
 use crate::subsystems::worker::WorkerSubsystem;
 
 /// High-level entrypoint: load config, init logging, run worker
@@ -60,15 +63,19 @@ pub async fn run_with_config_path(path: &str, log_file: Option<&str>) -> std::io
         .chat_api(Arc::clone(&chat_api))
         .hard_max_chars(600)
         .sample_percent(0.05)
+        .max_retry_attempts(3)
+        .retry_delay_secs(2)
         .build()
         .with_config(&cfg));
 
     let (telegram_api, target_chat_id) = if let Some(tg) = cfg.telegram.clone().filter(|t| t.enabled) {
-        let api: Arc<dyn TelegramApi> = Arc::new(RealTelegramApi::builder()
-            .client(Client::new())
-            .base_url(tg.api_base_url)
-            .token(tg.bot_token)
-            .build());
+        let api: Arc<dyn TelegramApi> = Arc::new(RealTelegramApi {
+            client: Client::new(),
+            base_url: tg.api_base_url,
+            token: tg.bot_token,
+            chat_id: tg.target_chat_id,
+            max_chars: tg.max_chars,
+        });
         (Some(api), Some(tg.target_chat_id))
     } else {
         (None, None)
@@ -90,11 +97,11 @@ pub async fn run_with_config_path(path: &str, log_file: Option<&str>) -> std::io
         .unwrap_or_else(|| "./cache".to_string());
     let cache_manager: Arc<dyn CacheManager> = Arc::new(FileSystemCacheManager::builder().cache_dir(cache_dir).build());
 
-    // Channel between crawler and worker
+    // Channel between crawler and worker (single items)
     let (tx, rx) = mpsc::channel(10);
 
     // Build subsystems
-    let npa_subsystem = NpaListCrawlerSubsystem::builder()
+    let npa_subsystem = ScannerSubsystem::builder()
         .config(cfg.clone())
         .req_timeout(req_timeout)
         .sender(tx)

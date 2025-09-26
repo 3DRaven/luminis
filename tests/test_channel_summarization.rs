@@ -1,6 +1,8 @@
 use luminis::run_with_config_path;
 use serial_test::serial;
-use tokio::fs;
+use assert_fs::prelude::*;
+use predicates::prelude::*;
+use pretty_assertions::assert_eq;
 use wiremock::MockServer;
 use wiremock::http::Method;
 use urlencoding::decode;
@@ -20,7 +22,7 @@ use crate::common::{
 async fn test_channel_specific_summarization_with_different_limits() {
     let server = MockServer::start().await;
     let base = server.uri();
-    let (_rss_xml, stages_json) = read_mocks();
+    let stages_json = read_mocks();
 
     // Setup mocks
     mount_npalist(&server).await;
@@ -35,12 +37,13 @@ async fn test_channel_specific_summarization_with_different_limits() {
     mount_mastodon(&server).await;
     
     // Setup config with multiple channels enabled
-    let tf = tempfile::NamedTempFile::new().unwrap();
-    let cache = tempfile::tempdir().unwrap();
+    let temp_dir = assert_fs::TempDir::new().unwrap();
+    let output_file = temp_dir.child("output.txt");
+    let cache = temp_dir.child("cache");
     
     let cfg_file = render_config_with_channels(
         &base,
-        tf.path().to_str().unwrap(),
+        output_file.path().to_str().unwrap(),
         cache.path().to_str().unwrap(),
         true,  // mastodon_enabled
         false, // telegram_enabled
@@ -48,17 +51,25 @@ async fn test_channel_specific_summarization_with_different_limits() {
         true,  // file_enabled
     );
 
+    // Предварительно создаем manifest.json с min_published_project_id=160533 (выше максимального ID на offset=0)
+    let manifest_content = r#"{
+        "min_published_project_id": 160533
+    }"#;
+    // Создаем manifest в правильном месте (./cache/manifest.json)
+    let manifest_dir = cache.child("manifest");
+    manifest_dir.create_dir_all().unwrap();
+    let manifest_path = manifest_dir.child("manifest.json");
+    // Удаляем старый manifest если он существует
+    let _ = std::fs::remove_file(manifest_path.path());
+    manifest_path.write_str(&manifest_content).unwrap();
+
     // Run the application
     let _ = run_with_config_path(cfg_file.path().to_str().unwrap(), None)
         .await
         .unwrap();
 
     // Проверка содержимого файла
-    let out = fs::read_to_string(tf.path()).await.unwrap();
-    assert!(
-        !out.trim().is_empty(),
-        "output file must contain published post"
-    );
+    output_file.assert(predicate::str::is_empty().not());
     
     // Проверка полного содержимого файла
     let expected_content = "https://regulation.gov.ru/projects/160532
@@ -69,10 +80,10 @@ async fn test_channel_specific_summarization_with_different_limits() {
 Репрессивность: 2/10 (незначительно)
 Коррупц. емкость: 6/10 (регион. перераспределение)
 
-Метаданные: [Деп:Минздрав России; Отв:Филиппов Олег Анатольевич]
+Метаданные: [Дата:2025-09-20; Деп:Минздрав России; Отв:Филиппов Олег Анатольевич]
 
 ";
-    assert_eq!(out, expected_content, "File content should match expected output");
+    output_file.assert(expected_content);
 
     // Verify that Gemini was called multiple times (once per channel)
     
@@ -98,10 +109,10 @@ async fn test_channel_specific_summarization_with_different_limits() {
     println!("Mastodon decoded body: {}", decoded_body);
     
     // Проверяем декодированное содержимое
-    assert!(decoded_body.contains("regulation.gov.ru/projects/160532"), "Mastodon post should contain URL");
-    assert!(decoded_body.contains("Поправки"), "Mastodon post should contain summary");
-    assert!(decoded_body.contains("Рейтинг"), "Mastodon post should contain rating");
-    assert!(decoded_body.contains("Метаданные"), "Mastodon post should contain metadata");
+    assert_eq!(decoded_body.contains("regulation.gov.ru/projects/160532"), true, "Mastodon post should contain URL");
+    assert_eq!(decoded_body.contains("Поправки"), true, "Mastodon post should contain summary");
+    assert_eq!(decoded_body.contains("Рейтинг"), true, "Mastodon post should contain rating");
+    assert_eq!(decoded_body.contains("Метаданные"), true, "Mastodon post should contain metadata");
     
     // Verify other mocks
     server.verify().await;
@@ -113,7 +124,7 @@ async fn test_channel_specific_summarization_with_different_limits() {
 async fn test_channel_summarization_caching() {
     let server = MockServer::start().await;
     let base = server.uri();
-    let (_rss_xml, stages_json) = read_mocks();
+    let stages_json = read_mocks();
 
     // Setup mocks
     mount_npalist(&server).await;
@@ -127,8 +138,9 @@ async fn test_channel_summarization_caching() {
     mount_mastodon(&server).await;
 
     // Setup config with cache prepopulated for one channel
-    let tf = tempfile::NamedTempFile::new().unwrap();
-    let cache = tempfile::tempdir().unwrap();
+    let temp_dir = assert_fs::TempDir::new().unwrap();
+    let output_file = temp_dir.child("output.txt");
+    let cache = &temp_dir;
     
     // Предзаполняем кэш для mastodon канала
     prepopulate_channel_cache(
@@ -140,7 +152,7 @@ async fn test_channel_summarization_caching() {
     
     let cfg_file = render_config_with_channels(
         &base,
-        tf.path().to_str().unwrap(),
+        output_file.path().to_str().unwrap(),
         cache.path().to_str().unwrap(),
         true,  // mastodon_enabled
         false, // telegram_enabled
@@ -168,7 +180,7 @@ async fn test_channel_summarization_caching() {
 async fn test_disabled_channel_no_summarization() {
     let server = MockServer::start().await;
     let base = server.uri();
-    let (_rss_xml, stages_json) = read_mocks();
+    let stages_json = read_mocks();
 
     // Setup mocks
     mount_npalist(&server).await;
@@ -179,12 +191,13 @@ async fn test_disabled_channel_no_summarization() {
     mount_gemini_generate_with_limit(&server, 10000).await;
 
     // Setup config with only console enabled
-    let tf = tempfile::NamedTempFile::new().unwrap();
-    let cache = tempfile::tempdir().unwrap();
+    let temp_dir = assert_fs::TempDir::new().unwrap();
+    let output_file = temp_dir.child("output.txt");
+    let cache = &temp_dir;
     
     let cfg_file = render_config_with_channels(
         &base,
-        tf.path().to_str().unwrap(),
+        output_file.path().to_str().unwrap(),
         cache.path().to_str().unwrap(),
         false, // mastodon_enabled (disabled)
         false, // telegram_enabled
@@ -209,7 +222,7 @@ async fn test_disabled_channel_no_summarization() {
 async fn test_different_character_limits_per_channel() {
     let server = MockServer::start().await;
     let base = server.uri();
-    let (_rss_xml, stages_json) = read_mocks();
+    let stages_json = read_mocks();
 
     // Setup mocks
     mount_npalist(&server).await;
@@ -226,12 +239,13 @@ async fn test_different_character_limits_per_channel() {
     mount_mastodon(&server).await;
 
     // Setup config with all channels enabled and custom limits
-    let tf = tempfile::NamedTempFile::new().unwrap();
-    let cache = tempfile::tempdir().unwrap();
+    let temp_dir = assert_fs::TempDir::new().unwrap();
+    let output_file = temp_dir.child("output.txt");
+    let cache = &temp_dir;
     
     let cfg_file = render_config_with_custom_limits(
         &base,
-        tf.path().to_str().unwrap(),
+        output_file.path().to_str().unwrap(),
         cache.path().to_str().unwrap(),
         true,  // mastodon_enabled
         true,  // telegram_enabled
@@ -243,17 +257,25 @@ async fn test_different_character_limits_per_channel() {
         20000, // file_max_chars
     );
 
+    // Предварительно создаем manifest.json с min_published_project_id=160533 (выше максимального ID на offset=0)
+    let manifest_content = r#"{
+        "min_published_project_id": 160533
+    }"#;
+    // Создаем manifest в правильном месте (./cache/manifest.json)
+    let manifest_dir = cache.child("manifest");
+    manifest_dir.create_dir_all().unwrap();
+    let manifest_path = manifest_dir.child("manifest.json");
+    // Удаляем старый manifest если он существует
+    let _ = std::fs::remove_file(manifest_path.path());
+    manifest_path.write_str(&manifest_content).unwrap();
+
     // Run the application
     let _ = run_with_config_path(cfg_file.path().to_str().unwrap(), None)
         .await
         .unwrap();
 
     // Проверка содержимого файла
-    let out = fs::read_to_string(tf.path()).await.unwrap();
-    assert!(
-        !out.trim().is_empty(),
-        "output file must contain published post"
-    );
+    output_file.assert(predicate::str::is_empty().not());
     
     // Проверка полного содержимого файла
     let expected_content = "https://regulation.gov.ru/projects/160532
@@ -264,10 +286,10 @@ async fn test_different_character_limits_per_channel() {
 Репрессивность: 2/10 (незначительно)
 Коррупц. емкость: 6/10 (регион. перераспределение)
 
-Метаданные: [Деп:Минздрав России; Отв:Филиппов Олег Анатольевич]
+Метаданные: [Дата:2025-09-20; Деп:Минздрав России; Отв:Филиппов Олег Анатольевич]
 
 ";
-    assert_eq!(out, expected_content, "File content should match expected output");
+    output_file.assert(expected_content);
 
     // Verify that Gemini was called for each channel with different limits
     
@@ -288,10 +310,10 @@ async fn test_different_character_limits_per_channel() {
     
     // Проверяем содержимое поста в Telegram
     let telegram_body_str = String::from_utf8_lossy(&telegram_request.body);
-    assert!(telegram_body_str.contains("https://regulation.gov.ru/projects/160532"), "Telegram post should contain URL");
-    assert!(telegram_body_str.contains("Поправки в закон об ОМС"), "Telegram post should contain summary");
-    assert!(telegram_body_str.contains("Рейтинг:"), "Telegram post should contain rating");
-    assert!(telegram_body_str.contains("Метаданные:"), "Telegram post should contain metadata");
+    assert_eq!(telegram_body_str.contains("https://regulation.gov.ru/projects/160532"), true, "Telegram post should contain URL");
+    assert_eq!(telegram_body_str.contains("Поправки в закон об ОМС"), true, "Telegram post should contain summary");
+    assert_eq!(telegram_body_str.contains("Рейтинг:"), true, "Telegram post should contain rating");
+    assert_eq!(telegram_body_str.contains("Метаданные:"), true, "Telegram post should contain metadata");
     
     // Проверка Mastodon
     let mastodon_requests: Vec<_> = received_requests
@@ -314,16 +336,16 @@ async fn test_different_character_limits_per_channel() {
     println!("Mastodon decoded body: {}", decoded_body);
     
     // Проверяем декодированное содержимое
-    assert!(decoded_body.contains("regulation.gov.ru/projects/160532"), "Mastodon post should contain URL");
-    assert!(decoded_body.contains("Поправки"), "Mastodon post should contain summary");
-    assert!(decoded_body.contains("Рейтинг"), "Mastodon post should contain rating");
-    assert!(decoded_body.contains("Метаданные"), "Mastodon post should contain metadata");
+    assert_eq!(decoded_body.contains("regulation.gov.ru/projects/160532"), true, "Mastodon post should contain URL");
+    assert_eq!(decoded_body.contains("Поправки"), true, "Mastodon post should contain summary");
+    assert_eq!(decoded_body.contains("Рейтинг"), true, "Mastodon post should contain rating");
+    assert_eq!(decoded_body.contains("Метаданные"), true, "Mastodon post should contain metadata");
     
     // Проверяем конкретный текст из ответа Gemini (используем декодированную строку)
     // Mastodon использует лимит 495 символов, поэтому текст отличается от других каналов
-    assert!(decoded_body.contains("Поправки+в+закон+об+ОМС"), "Mastodon post should contain Gemini summary text");
-    assert!(decoded_body.contains("Губернаторы+смогут+передавать"), "Mastodon post should contain Gemini text about governors");
-    assert!(decoded_body.contains("Полезность:+5/10"), "Mastodon post should contain Gemini rating");
+    assert_eq!(decoded_body.contains("Поправки+в+закон+об+ОМС"), true, "Mastodon post should contain Gemini summary text");
+    assert_eq!(decoded_body.contains("Губернаторы+смогут+передавать"), true, "Mastodon post should contain Gemini text about governors");
+    assert_eq!(decoded_body.contains("Полезность:+5/10"), true, "Mastodon post should contain Gemini rating");
     
     // Verify other mocks
     server.verify().await;
@@ -336,7 +358,7 @@ async fn test_different_character_limits_per_channel() {
 async fn test_channel_summarization_cache_reuse() {
     let server = MockServer::start().await;
     let base = server.uri();
-    let (_rss_xml, stages_json) = read_mocks();
+    let stages_json = read_mocks();
 
     // Setup mocks
     mount_npalist(&server).await;
@@ -350,12 +372,13 @@ async fn test_channel_summarization_cache_reuse() {
     mount_mastodon(&server).await;
 
     // Setup config
-    let tf = tempfile::NamedTempFile::new().unwrap();
-    let cache = tempfile::tempdir().unwrap();
+    let temp_dir = assert_fs::TempDir::new().unwrap();
+    let output_file = temp_dir.child("output.txt");
+    let cache = &temp_dir;
     
     let cfg_file = render_config_with_channels(
         &base,
-        tf.path().to_str().unwrap(),
+        output_file.path().to_str().unwrap(),
         cache.path().to_str().unwrap(),
         true,  // mastodon_enabled
         false, // telegram_enabled

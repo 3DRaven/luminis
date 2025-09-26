@@ -14,10 +14,6 @@ crawler:
     url: {{ base }}/api/npalist/?limit={limit}&offset={offset}&sort=desc
     limit: 50
     regex: '(\d{5,})'
-  rss:
-    enabled: {{ rss_enabled }}
-    url: {{ base }}/api/public/Rss
-    regex: '(\d{5,})'
   file_id:
     url: {{ base }}/api/public/PublicProjects/GetProjectStages/{project_id}
     regex: '"fileId"\s*:\s*"([^\"]+)"'
@@ -45,7 +41,10 @@ output:
   file_append: false
 run:
   max_posts_per_run: 1
-  summarization_timeout_secs: 2
+  # Таймаут суммаризации в секундах
+  summarization_timeout_secs: 3
+  # Задержка перед обработкой каждого элемента в секундах (для контроля скорости)
+  processing_delay_secs: 0
   input_sample_percent: 1.0
   model_max_chars: 300
   cache_dir: {{ cache }}
@@ -55,6 +54,7 @@ run:
 
     {%- set meta_str = "" -%}
     {%- set sep = "" -%}
+    {%- if publish_date -%}{% set meta_str = meta_str ~ sep ~ "Дата:" ~ publish_date | split(pat="T") | first %}{% set sep = "; " %}{% endif %}
     {%- if department -%}{% set meta_str = meta_str ~ sep ~ "Деп:" ~ department %}{% set sep = "; " %}{% endif %}
     {%- if responsible -%}{% set meta_str = meta_str ~ sep ~ "Отв:" ~ responsible %}{% set sep = "; " %}{% elif author -%}{% set meta_str = meta_str ~ sep ~ "Отв:" ~ author %}{% set sep = "; " %}{% endif %}
     Метаданные: [{{ meta_str }}]{% endraw %}

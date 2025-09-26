@@ -41,7 +41,7 @@ fn assert_mastodon_post_content(body: &[u8]) {
 async fn publish_mastodon_and_file_from_npalist_without_cache() {
     let server = MockServer::start().await;
     let base = server.uri();
-    let (_rss_xml, stages_json) = read_mocks();
+    let stages_json = read_mocks();
 
     // Setup mocks for this scenario: NPAList + Stages + DOCX + Gemini + Mastodon
     mount_npalist(&server).await;
@@ -53,7 +53,7 @@ async fn publish_mastodon_and_file_from_npalist_without_cache() {
     // Setup config without cache
     let temp_dir = assert_fs::TempDir::new().unwrap();
     let output_file = temp_dir.child("output.txt");
-    let cache = tempfile::tempdir().unwrap();
+    let cache = temp_dir.child("cache");
 
     let cfg_file = render_config(
         &base,
@@ -63,7 +63,6 @@ async fn publish_mastodon_and_file_from_npalist_without_cache() {
         false, // telegram_enabled
         false, // console_enabled
         true,  // file_enabled
-        false, // rss_enabled
         true,  // npalist_enabled
     );
 
@@ -84,7 +83,7 @@ async fn publish_mastodon_and_file_from_npalist_without_cache() {
 Репрессивность: 2/10 (незначительно)
 Коррупц. емкость: 6/10 (регион. перераспределение)
 
-Метаданные: [Деп:Минздрав России; Отв:Филиппов Олег Анатольевич]
+Метаданные: [Дата:2025-09-20; Деп:Минздрав России; Отв:Филиппов Олег Анатольевич]
 
 ";
     output_file.assert(expected_content);
@@ -127,7 +126,7 @@ async fn publish_mastodon_and_file_from_npalist_without_cache() {
 async fn publish_only_file_from_npalist_with_cache() {
     let server = MockServer::start().await;
     let base = server.uri();
-    let (_rss_xml, stages_json) = read_mocks();
+    let stages_json = read_mocks();
 
     // Setup mocks for this scenario: NPAList + Stages + DOCX + Gemini
     mount_npalist(&server).await;
@@ -138,7 +137,7 @@ async fn publish_only_file_from_npalist_with_cache() {
     // Setup config with cache prepopulated
     let temp_dir = assert_fs::TempDir::new().unwrap();
     let output_file = temp_dir.child("output.txt");
-    let cache = tempfile::tempdir().unwrap();
+    let cache = temp_dir.child("cache");
     prepopulate_cache(
         cache.path().to_str().unwrap(),
         "160531",
@@ -153,7 +152,6 @@ async fn publish_only_file_from_npalist_with_cache() {
         false, // telegram_enabled
         false, // console_enabled
         true,  // file_enabled
-        false, // rss_enabled
         true,  // npalist_enabled
     );
 
@@ -174,7 +172,7 @@ async fn publish_only_file_from_npalist_with_cache() {
 Репрессивность: 2/10 (незначительно)
 Коррупц. емкость: 6/10 (регион. перераспределение)
 
-Метаданные: [Деп:Минздрав России; Отв:Филиппов Олег Анатольевич]
+Метаданные: [Дата:2025-09-20; Деп:Минздрав России; Отв:Филиппов Олег Анатольевич]
 
 ";
     output_file.assert(expected_content);
@@ -188,7 +186,7 @@ async fn publish_only_file_from_npalist_with_cache() {
 async fn publish_console_from_npalist_without_cache() {
     let server = MockServer::start().await;
     let base = server.uri();
-    let (_rss_xml, stages_json) = read_mocks();
+    let stages_json = read_mocks();
 
     // Setup mocks for this scenario: NPAList + Stages + DOCX + Gemini
     mount_npalist(&server).await;
@@ -199,7 +197,7 @@ async fn publish_console_from_npalist_without_cache() {
     // Setup config without cache
     let temp_dir = assert_fs::TempDir::new().unwrap();
     let output_file = temp_dir.child("output.txt");
-    let cache = tempfile::tempdir().unwrap();
+    let cache = temp_dir.child("cache");
 
     let cfg_file = render_config(
         &base,
@@ -209,7 +207,6 @@ async fn publish_console_from_npalist_without_cache() {
         false, // telegram_enabled
         true,  // console_enabled
         false, // file_enabled
-        false, // rss_enabled
         true,  // npalist_enabled
     );
 
@@ -226,7 +223,7 @@ async fn publish_console_from_npalist_without_cache() {
 async fn publish_telegram_from_npalist_without_cache() {
     let server = MockServer::start().await;
     let base = server.uri();
-    let (_rss_xml, stages_json) = read_mocks();
+    let stages_json = read_mocks();
 
     // Setup mocks for this scenario: NPAList + Stages + DOCX + Gemini + Telegram
     mount_npalist(&server).await;
@@ -238,7 +235,7 @@ async fn publish_telegram_from_npalist_without_cache() {
     // Setup config without cache
     let temp_dir = assert_fs::TempDir::new().unwrap();
     let output_file = temp_dir.child("output.txt");
-    let cache = tempfile::tempdir().unwrap();
+    let cache = temp_dir.child("cache");
 
     let cfg_file = render_config(
         &base,
@@ -248,7 +245,6 @@ async fn publish_telegram_from_npalist_without_cache() {
         true,  // telegram_enabled
         false, // console_enabled
         true,  // file_enabled
-        false, // rss_enabled
         true,  // npalist_enabled
     );
 
@@ -288,7 +284,7 @@ async fn publish_telegram_from_npalist_without_cache() {
 async fn publish_console_and_file_from_npalist_with_cache() {
     let server = MockServer::start().await;
     let base = server.uri();
-    let (_rss_xml, stages_json) = read_mocks();
+    let stages_json = read_mocks();
 
     // Setup mocks for this scenario: NPAList + Stages + DOCX + Gemini
     mount_npalist(&server).await;
@@ -299,7 +295,7 @@ async fn publish_console_and_file_from_npalist_with_cache() {
     // Setup config with cache prepopulated
     let temp_dir = assert_fs::TempDir::new().unwrap();
     let output_file = temp_dir.child("output.txt");
-    let cache = tempfile::tempdir().unwrap();
+    let cache = temp_dir.child("cache");
     prepopulate_cache(
         cache.path().to_str().unwrap(),
         "160531",
@@ -314,7 +310,6 @@ async fn publish_console_and_file_from_npalist_with_cache() {
         false, // telegram_enabled
         true,  // console_enabled
         true,  // file_enabled
-        false, // rss_enabled
         true,  // npalist_enabled
     );
 
@@ -334,7 +329,7 @@ async fn publish_console_and_file_from_npalist_with_cache() {
 Репрессивность: 2/10 (незначительно)
 Коррупц. емкость: 6/10 (регион. перераспределение)
 
-Метаданные: [Деп:Минздрав России; Отв:Филиппов Олег Анатольевич]
+Метаданные: [Дата:2025-09-20; Деп:Минздрав России; Отв:Филиппов Олег Анатольевич]
 
 ";
     output_file.assert(expected_content);
@@ -348,7 +343,7 @@ async fn publish_console_and_file_from_npalist_with_cache() {
 async fn publish_mastodon_and_telegram_from_npalist_with_cache() {
     let server = MockServer::start().await;
     let base = server.uri();
-    let (_rss_xml, stages_json) = read_mocks();
+    let stages_json = read_mocks();
 
     // Setup mocks for this scenario: NPAList + Stages + DOCX + Gemini + Telegram + Mastodon
     mount_npalist(&server).await;
@@ -361,7 +356,7 @@ async fn publish_mastodon_and_telegram_from_npalist_with_cache() {
     // Setup config with cache prepopulated
     let temp_dir = assert_fs::TempDir::new().unwrap();
     let output_file = temp_dir.child("output.txt");
-    let cache = tempfile::tempdir().unwrap();
+    let cache = temp_dir.child("cache");
     prepopulate_cache(
         cache.path().to_str().unwrap(),
         "160531",
@@ -376,7 +371,6 @@ async fn publish_mastodon_and_telegram_from_npalist_with_cache() {
         true,  // telegram_enabled
         false, // console_enabled
         true,  // file_enabled
-        false, // rss_enabled
         true,  // npalist_enabled
     );
 
@@ -431,7 +425,7 @@ async fn publish_mastodon_and_telegram_from_npalist_with_cache() {
 async fn publish_telegram_and_console_from_npalist_without_cache() {
     let server = MockServer::start().await;
     let base = server.uri();
-    let (_rss_xml, stages_json) = read_mocks();
+    let stages_json = read_mocks();
 
     // Setup mocks for this scenario: NPAList + Stages + DOCX + Gemini + Telegram
     mount_npalist(&server).await;
@@ -443,7 +437,7 @@ async fn publish_telegram_and_console_from_npalist_without_cache() {
     // Setup config without cache
     let temp_dir = assert_fs::TempDir::new().unwrap();
     let output_file = temp_dir.child("output.txt");
-    let cache = tempfile::tempdir().unwrap();
+    let cache = temp_dir.child("cache");
 
     let cfg_file = render_config(
         &base,
@@ -453,7 +447,6 @@ async fn publish_telegram_and_console_from_npalist_without_cache() {
         true,  // telegram_enabled
         true,  // console_enabled
         false, // file_enabled
-        false, // rss_enabled
         true,  // npalist_enabled
     );
 
@@ -491,7 +484,7 @@ async fn publish_telegram_and_console_from_npalist_without_cache() {
 async fn publish_telegram_and_file_from_npalist_without_cache() {
     let server = MockServer::start().await;
     let base = server.uri();
-    let (_rss_xml, stages_json) = read_mocks();
+    let stages_json = read_mocks();
 
     // Setup mocks for this scenario: NPAList + Stages + DOCX + Gemini + Telegram
     mount_npalist(&server).await;
@@ -503,7 +496,7 @@ async fn publish_telegram_and_file_from_npalist_without_cache() {
     // Setup config without cache
     let temp_dir = assert_fs::TempDir::new().unwrap();
     let output_file = temp_dir.child("output.txt");
-    let cache = tempfile::tempdir().unwrap();
+    let cache = temp_dir.child("cache");
 
     let cfg_file = render_config(
         &base,
@@ -513,7 +506,6 @@ async fn publish_telegram_and_file_from_npalist_without_cache() {
         true,  // telegram_enabled
         false, // console_enabled
         true,  // file_enabled
-        false, // rss_enabled
         true,  // npalist_enabled
     );
 
@@ -533,7 +525,7 @@ async fn publish_telegram_and_file_from_npalist_without_cache() {
 Репрессивность: 2/10 (незначительно)
 Коррупц. емкость: 6/10 (регион. перераспределение)
 
-Метаданные: [Деп:Минздрав России; Отв:Филиппов Олег Анатольевич]
+Метаданные: [Дата:2025-09-20; Деп:Минздрав России; Отв:Филиппов Олег Анатольевич]
 
 ";
     output_file.assert(expected_content);
@@ -566,7 +558,7 @@ async fn publish_telegram_and_file_from_npalist_without_cache() {
 async fn publish_telegram_and_file_from_npalist_with_cache() {
     let server = MockServer::start().await;
     let base = server.uri();
-    let (_rss_xml, stages_json) = read_mocks();
+    let stages_json = read_mocks();
 
     // Setup mocks for this scenario: NPAList + Stages + DOCX + Gemini + Telegram
     mount_npalist(&server).await;
@@ -578,7 +570,7 @@ async fn publish_telegram_and_file_from_npalist_with_cache() {
     // Setup config with cache prepopulated
     let temp_dir = assert_fs::TempDir::new().unwrap();
     let output_file = temp_dir.child("output.txt");
-    let cache = tempfile::tempdir().unwrap();
+    let cache = temp_dir.child("cache");
     prepopulate_cache(
         cache.path().to_str().unwrap(),
         "160531",
@@ -593,7 +585,6 @@ async fn publish_telegram_and_file_from_npalist_with_cache() {
         true,  // telegram_enabled
         false, // console_enabled
         true,  // file_enabled
-        false, // rss_enabled
         true,  // npalist_enabled
     );
 
@@ -613,7 +604,7 @@ async fn publish_telegram_and_file_from_npalist_with_cache() {
 Репрессивность: 2/10 (незначительно)
 Коррупц. емкость: 6/10 (регион. перераспределение)
 
-Метаданные: [Деп:Минздрав России; Отв:Филиппов Олег Анатольевич]
+Метаданные: [Дата:2025-09-20; Деп:Минздрав России; Отв:Филиппов Олег Анатольевич]
 
 ";
     output_file.assert(expected_content);
@@ -646,7 +637,7 @@ async fn publish_telegram_and_file_from_npalist_with_cache() {
 async fn publish_mastodon_and_console_from_npalist_without_cache() {
     let server = MockServer::start().await;
     let base = server.uri();
-    let (_rss_xml, stages_json) = read_mocks();
+    let stages_json = read_mocks();
 
     // Setup mocks for this scenario: NPAList + Stages + DOCX + Gemini + Mastodon
     mount_npalist(&server).await;
@@ -658,7 +649,7 @@ async fn publish_mastodon_and_console_from_npalist_without_cache() {
     // Setup config without cache
     let temp_dir = assert_fs::TempDir::new().unwrap();
     let output_file = temp_dir.child("output.txt");
-    let cache = tempfile::tempdir().unwrap();
+    let cache = temp_dir.child("cache");
 
     let cfg_file = render_config(
         &base,
@@ -668,7 +659,6 @@ async fn publish_mastodon_and_console_from_npalist_without_cache() {
         false, // telegram_enabled
         true,  // console_enabled
         false, // file_enabled
-        false, // rss_enabled
         true,  // npalist_enabled
     );
 
@@ -700,7 +690,7 @@ async fn publish_mastodon_and_console_from_npalist_without_cache() {
 async fn publish_mastodon_and_console_from_npalist_with_cache() {
     let server = MockServer::start().await;
     let base = server.uri();
-    let (_rss_xml, stages_json) = read_mocks();
+    let stages_json = read_mocks();
 
     // Setup mocks for this scenario: NPAList + Stages + DOCX + Gemini + Mastodon
     mount_npalist(&server).await;
@@ -712,7 +702,7 @@ async fn publish_mastodon_and_console_from_npalist_with_cache() {
     // Setup config with cache prepopulated
     let temp_dir = assert_fs::TempDir::new().unwrap();
     let output_file = temp_dir.child("output.txt");
-    let cache = tempfile::tempdir().unwrap();
+    let cache = temp_dir.child("cache");
     prepopulate_cache(
         cache.path().to_str().unwrap(),
         "160531",
@@ -727,7 +717,6 @@ async fn publish_mastodon_and_console_from_npalist_with_cache() {
         false, // telegram_enabled
         true,  // console_enabled
         false, // file_enabled
-        false, // rss_enabled
         true,  // npalist_enabled
     );
 
@@ -759,7 +748,7 @@ async fn publish_mastodon_and_console_from_npalist_with_cache() {
 async fn publish_mastodon_and_file_from_npalist_with_cache() {
     let server = MockServer::start().await;
     let base = server.uri();
-    let (_rss_xml, stages_json) = read_mocks();
+    let stages_json = read_mocks();
 
     // Setup mocks for this scenario: NPAList + Stages + DOCX + Gemini + Mastodon
     mount_npalist(&server).await;
@@ -771,7 +760,7 @@ async fn publish_mastodon_and_file_from_npalist_with_cache() {
     // Setup config with cache prepopulated
     let temp_dir = assert_fs::TempDir::new().unwrap();
     let output_file = temp_dir.child("output.txt");
-    let cache = tempfile::tempdir().unwrap();
+    let cache = temp_dir.child("cache");
     prepopulate_cache(
         cache.path().to_str().unwrap(),
         "160531",
@@ -786,7 +775,6 @@ async fn publish_mastodon_and_file_from_npalist_with_cache() {
         false, // telegram_enabled
         false, // console_enabled
         true,  // file_enabled
-        false, // rss_enabled
         true,  // npalist_enabled
     );
 
@@ -806,7 +794,7 @@ async fn publish_mastodon_and_file_from_npalist_with_cache() {
 Репрессивность: 2/10 (незначительно)
 Коррупц. емкость: 6/10 (регион. перераспределение)
 
-Метаданные: [Деп:Минздрав России; Отв:Филиппов Олег Анатольевич]
+Метаданные: [Дата:2025-09-20; Деп:Минздрав России; Отв:Филиппов Олег Анатольевич]
 
 ";
     output_file.assert(expected_content);
@@ -835,7 +823,7 @@ async fn publish_mastodon_and_file_from_npalist_with_cache() {
 async fn publish_telegram_and_console_from_npalist_with_cache() {
     let server = MockServer::start().await;
     let base = server.uri();
-    let (_rss_xml, stages_json) = read_mocks();
+    let stages_json = read_mocks();
 
     // Setup mocks for this scenario: NPAList + Stages + DOCX + Gemini + Telegram
     mount_npalist(&server).await;
@@ -847,7 +835,7 @@ async fn publish_telegram_and_console_from_npalist_with_cache() {
     // Setup config with cache prepopulated
     let temp_dir = assert_fs::TempDir::new().unwrap();
     let output_file = temp_dir.child("output.txt");
-    let cache = tempfile::tempdir().unwrap();
+    let cache = temp_dir.child("cache");
     prepopulate_cache(
         cache.path().to_str().unwrap(),
         "160531",
@@ -862,7 +850,6 @@ async fn publish_telegram_and_console_from_npalist_with_cache() {
         true,  // telegram_enabled
         true,  // console_enabled
         false, // file_enabled
-        false, // rss_enabled
         true,  // npalist_enabled
     );
 

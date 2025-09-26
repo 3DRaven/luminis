@@ -1,12 +1,13 @@
 use luminis::run_with_config_path;
 use serial_test::serial;
 use wiremock::MockServer;
+use assert_fs::fixture::PathChild;
+use pretty_assertions::assert_eq;
 
 mod common;
 
 use crate::common::{
-    mount_docx, mount_gemini_generate, mount_mastodon, mount_mastodon_app_registration,
-    mount_mastodon_token_exchange, mount_npalist, mount_stages,
+    mount_docx, mount_gemini_generate, mount_mastodon, mount_npalist, mount_stages,
     mount_telegram, read_mocks, render_config_with_mastodon_params,
 };
 use wiremock::http::Method;
@@ -24,16 +25,16 @@ fn assert_mastodon_post_content(body: &[u8]) {
     println!("Mastodon decoded body: {}", decoded_body);
     
     // Проверяем декодированное содержимое
-    assert!(decoded_body.contains("regulation.gov.ru/projects/160532"), "Mastodon post should contain URL");
-    assert!(decoded_body.contains("Поправки"), "Mastodon post should contain summary");
-    assert!(decoded_body.contains("Рейтинг"), "Mastodon post should contain rating");
-    assert!(decoded_body.contains("Метаданные"), "Mastodon post should contain metadata");
+    assert_eq!(decoded_body.contains("regulation.gov.ru/projects/160532"), true, "Mastodon post should contain URL");
+    assert_eq!(decoded_body.contains("Поправки"), true, "Mastodon post should contain summary");
+    assert_eq!(decoded_body.contains("Рейтинг"), true, "Mastodon post should contain rating");
+    assert_eq!(decoded_body.contains("Метаданные"), true, "Mastodon post should contain metadata");
     
     // Проверяем конкретный текст из ответа Gemini (используем декодированную строку)
     // Mastodon использует лимит 495 символов, поэтому текст отличается от других каналов
-    assert!(decoded_body.contains("Поправки+в+закон+об+ОМС"), "Mastodon post should contain Gemini summary text");
-    assert!(decoded_body.contains("Губернаторы+смогут+передавать"), "Mastodon post should contain Gemini text about governors");
-    assert!(decoded_body.contains("Полезность:+5/10"), "Mastodon post should contain Gemini rating");
+    assert_eq!(decoded_body.contains("Поправки+в+закон+об+ОМС"), true, "Mastodon post should contain Gemini summary text");
+    assert_eq!(decoded_body.contains("Губернаторы+смогут+передавать"), true, "Mastodon post should contain Gemini text about governors");
+    assert_eq!(decoded_body.contains("Полезность:+5/10"), true, "Mastodon post should contain Gemini rating");
 }
 
 #[tokio::test]
@@ -41,7 +42,7 @@ fn assert_mastodon_post_content(body: &[u8]) {
 async fn test_mastodon_critical_error_no_token_no_login_cli() {
     let server = MockServer::start().await;
     let base = server.uri();
-    let (_rss_xml, stages_json) = read_mocks();
+    let stages_json = read_mocks();
 
     // Setup mocks
     mount_npalist(&server).await;
@@ -51,15 +52,15 @@ async fn test_mastodon_critical_error_no_token_no_login_cli() {
     mount_telegram(&server).await;
 
     // Create isolated test environment without secrets/mastodon.yaml
-    let temp_dir = tempfile::tempdir().unwrap();
+    let temp_dir = assert_fs::TempDir::new().unwrap();
     let original_dir = std::env::current_dir().unwrap();
     
     // Change to temp directory to avoid loading existing secrets/mastodon.yaml
     std::env::set_current_dir(&temp_dir).unwrap();
 
     // Setup config with Mastodon enabled but no token and login_cli=false
-    let tf = tempfile::NamedTempFile::new().unwrap();
-    let cache = tempfile::tempdir().unwrap();
+    let tf = temp_dir.child("output.txt");
+    let cache = temp_dir.child("cache");
     
     let cfg_file = render_config_with_mastodon_params(
         &base,
@@ -85,18 +86,18 @@ async fn test_mastodon_critical_error_no_token_no_login_cli() {
     
     
     // Verify that the application failed with the expected error
-    assert!(result.is_err(), "Application should fail when Mastodon is enabled but no token available and login_cli=false");
+    assert_eq!(result.is_err(), true, "Application should fail when Mastodon is enabled but no token available and login_cli=false");
     
     let error = result.unwrap_err();
     let error_msg = error.to_string();
     println!("Actual error message: {}", error_msg);
     
     // Check for the shutdown error (which indicates a subsystem failed)
-    assert!(error_msg.contains("shutdown error"), 
+    assert_eq!(error_msg.contains("shutdown error"), true, 
         "Error message should contain 'shutdown error', got: {}", error_msg);
     
     // The error indicates that at least one subsystem returned an error
-    assert!(error_msg.contains("at least one subsystem returned an error"), 
+    assert_eq!(error_msg.contains("at least one subsystem returned an error"), true, 
         "Error message should indicate subsystem failure, got: {}", error_msg);
     
     // Restore original working directory
@@ -108,7 +109,7 @@ async fn test_mastodon_critical_error_no_token_no_login_cli() {
 async fn test_mastodon_works_with_valid_token() {
     let server = MockServer::start().await;
     let base = server.uri();
-    let (_rss_xml, stages_json) = read_mocks();
+    let stages_json = read_mocks();
 
     // Setup mocks
     mount_npalist(&server).await;
@@ -120,7 +121,8 @@ async fn test_mastodon_works_with_valid_token() {
 
     // Setup config with Mastodon enabled and valid token
     let tf = tempfile::NamedTempFile::new().unwrap();
-    let cache = tempfile::tempdir().unwrap();
+    let temp_dir = assert_fs::TempDir::new().unwrap();
+    let cache = temp_dir.child("cache");
     
     let cfg_file = render_config_with_mastodon_params(
         &base,
@@ -146,7 +148,7 @@ async fn test_mastodon_works_with_valid_token() {
     let result = run_with_config_path(cfg_file.path().to_str().unwrap(), None).await;
     
     // Verify that the application succeeded
-    assert!(result.is_ok(), "Application should work when Mastodon is enabled with valid token: {:?}", result.err());
+    assert_eq!(result.is_ok(), true, "Application should work when Mastodon is enabled with valid token: {:?}", result.err());
 
     // Детальная проверка публикации в Mastodon
     let received_requests = server.received_requests().await.unwrap();
@@ -172,7 +174,7 @@ async fn test_mastodon_works_with_valid_token() {
 async fn test_mastodon_disabled_no_error() {
     let server = MockServer::start().await;
     let base = server.uri();
-    let (_rss_xml, stages_json) = read_mocks();
+    let stages_json = read_mocks();
 
     // Setup mocks
     mount_npalist(&server).await;
@@ -183,7 +185,8 @@ async fn test_mastodon_disabled_no_error() {
 
     // Setup config with Mastodon disabled
     let tf = tempfile::NamedTempFile::new().unwrap();
-    let cache = tempfile::tempdir().unwrap();
+    let temp_dir = assert_fs::TempDir::new().unwrap();
+    let cache = temp_dir.child("cache");
     
     let cfg_file = render_config_with_mastodon_params(
         &base,
@@ -203,7 +206,7 @@ async fn test_mastodon_disabled_no_error() {
     let result = run_with_config_path(cfg_file.path().to_str().unwrap(), None).await;
     
     // Verify that the application succeeded
-    assert!(result.is_ok(), "Application should work when Mastodon is disabled: {:?}", result.err());
+    assert_eq!(result.is_ok(), true, "Application should work when Mastodon is disabled: {:?}", result.err());
 
     // Проверяем, что Mastodon НЕ был вызван (поскольку он отключен)
     let received_requests = server.received_requests().await.unwrap();

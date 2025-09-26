@@ -1,19 +1,10 @@
 //
 
-use crate::services::crawler::FileIdScanner;
+use crate::crawlers::FileIdScanner;
 use crate::traits::markdown_fetcher::MarkdownFetcher;
-use crate::models::channel::PublisherChannel;
-use crate::models::types::{
-    ProjectId, DocxPath, MarkdownPath, SummaryPath, PostPath, 
-    SummaryText, PostText, CreatedAt
-};
 use markdownify::docx;
 use reqwest::Client;
-use serde::{Deserialize, Serialize};
-use std::fs;
-use std::io::{self, Write};
-use std::path::{Path, PathBuf};
-use std::collections::HashMap;
+use std::io::Write;
 use tracing::{debug, info};
 use bon::bon;
 
@@ -94,160 +85,8 @@ impl DocxMarkdownFetcher {
     // kept functions below
 }
 
-#[derive(Serialize, Deserialize)]
-pub struct CacheMetadata {
-    pub project_id: ProjectId,
-    pub docx_path: DocxPath,
-    pub markdown_path: MarkdownPath,
-    pub summary_path: Option<SummaryPath>,
-    pub post_path: Option<PostPath>,
-    pub published_channels: Vec<PublisherChannel>,
-    pub created_at: CreatedAt,
-    // Новые поля для суммаризаций по каналам
-    pub channel_summaries: std::collections::HashMap<PublisherChannel, SummaryText>, // channel -> summary_text
-    pub channel_posts: std::collections::HashMap<PublisherChannel, PostText>,     // channel -> post_text
-}
 
-pub fn save_cache_artifacts(
-    cache_dir: &str,
-    project_id: &str,
-    docx_bytes: Option<&[u8]>,
-    markdown_text: &str,
-    summary_text: &str,
-    post_text: &str,
-    published_channels: &[PublisherChannel],
-) -> std::io::Result<()> {
-    let base = project_dir(cache_dir, project_id);
-    fs::create_dir_all(&base)?;
-    let ts: CreatedAt = chrono::Utc::now().to_rfc3339().into();
 
-    // per-project subdir layout
-    let docx_path = base.join("source.docx");
-    let md_path = base.join("extracted.md");
-    let sum_path = base.join("summary.txt");
-    let post_path = base.join("post.txt");
-    let meta_path = base.join("metadata.json");
-
-    if let Some(bytes) = docx_bytes {
-        fs::write(&docx_path, bytes)?;
-    }
-    fs::write(&md_path, markdown_text)?;
-    if !summary_text.is_empty() {
-        fs::write(&sum_path, summary_text)?;
-    }
-    if !post_text.is_empty() {
-        fs::write(&post_path, post_text)?;
-    }
-
-    let meta = CacheMetadata {
-        project_id: project_id.to_string().into(),
-        docx_path: docx_path.to_string_lossy().to_string().into(),
-        markdown_path: md_path.to_string_lossy().to_string().into(),
-        summary_path: if !summary_text.is_empty() {
-            Some(sum_path.to_string_lossy().to_string().into())
-        } else {
-            None
-        },
-        post_path: if !post_text.is_empty() {
-            Some(post_path.to_string_lossy().to_string().into())
-        } else {
-            None
-        },
-        published_channels: published_channels.to_vec(),
-        created_at: ts.into(),
-        channel_summaries: HashMap::new(), // Будет заполняться отдельно
-        channel_posts: HashMap::new(),      // Будет заполняться отдельно
-    };
-    let json = serde_json::to_string_pretty(&meta).unwrap_or_else(|_| "{}".to_string());
-    fs::write(&meta_path, json)?;
-    Ok(())
-}
-
-fn meta_path_for(cache_dir: &str, project_id: &str) -> PathBuf {
-    project_dir(cache_dir, project_id).join("metadata.json")
-}
-
-pub fn load_cache_metadata(cache_dir: &str, project_id: &str) -> io::Result<Option<CacheMetadata>> {
-    // new layout first
-    let p = meta_path_for(cache_dir, project_id);
-    let data = if p.exists() {
-        fs::read_to_string(p)?
-    } else {
-        // legacy fallback
-        let legacy = Path::new(cache_dir).join(format!("{}_metadata.json", project_id));
-        if !legacy.exists() {
-            return Ok(None);
-        }
-        fs::read_to_string(legacy)?
-    };
-    match serde_json::from_str::<CacheMetadata>(&data) {
-        Ok(m) => Ok(Some(m)),
-        Err(_) => Ok(None),
-    }
-}
-
-pub fn load_cached_summary(cache_dir: &str, project_id: &str) -> io::Result<Option<String>> {
-    // new layout first
-    let p = project_dir(cache_dir, project_id).join("summary.txt");
-    let s = if p.exists() {
-        fs::read_to_string(p)?
-    } else {
-        // legacy fallback
-        let legacy = Path::new(cache_dir).join(format!("{}_summary.txt", project_id));
-        if !legacy.exists() {
-            return Ok(None);
-        }
-        fs::read_to_string(legacy)?
-    };
-    Ok(Some(s))
-}
-
-pub fn add_published_channels(
-    cache_dir: &str,
-    project_id: &str,
-    new_channels: &[PublisherChannel],
-) -> io::Result<()> {
-    let p = meta_path_for(cache_dir, project_id);
-    let mut meta = if p.exists() {
-        let data = fs::read_to_string(&p)?;
-        serde_json::from_str::<CacheMetadata>(&data).unwrap_or(CacheMetadata {
-            project_id: project_id.to_string().into(),
-            docx_path: String::new().into(),
-            markdown_path: String::new().into(),
-            summary_path: None,
-            post_path: None,
-            published_channels: vec![],
-            created_at: chrono::Utc::now().to_rfc3339().into(),
-            channel_summaries: HashMap::new(),
-            channel_posts: HashMap::new(),
-        })
-    } else {
-        CacheMetadata {
-            project_id: project_id.to_string().into(),
-            docx_path: String::new().into(),
-            markdown_path: String::new().into(),
-            summary_path: None,
-            post_path: None,
-            published_channels: vec![],
-            created_at: chrono::Utc::now().to_rfc3339().into(),
-            channel_summaries: HashMap::new(),
-            channel_posts: HashMap::new(),
-        }
-    };
-    for ch in new_channels {
-        if !meta.published_channels.iter().any(|c| c == ch) {
-            meta.published_channels.push(*ch);
-        }
-    }
-    let out = serde_json::to_string_pretty(&meta).unwrap_or_else(|_| "{}".to_string());
-    fs::write(p, out)
-}
-
-fn project_dir(cache_dir: &str, project_id: &str) -> PathBuf {
-    let mut p = PathBuf::from(cache_dir);
-    p.push(project_id);
-    p
-}
 
 // New helper that converts DOCX bytes to Markdown via markdownify
 impl DocxMarkdownFetcher {
